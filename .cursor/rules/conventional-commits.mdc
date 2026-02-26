@@ -1,0 +1,52 @@
+---
+description: Convenção Conventional Commits para mensagens de commit
+alwaysApply: true
+---
+
+# Conventional Commits
+
+Sempre use a [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) na criação de commits.
+
+## Formato
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+## Tipos principais
+
+| Tipo | Uso | SemVer |
+|------|-----|--------|
+| `feat` | Nova funcionalidade | MINOR |
+| `fix` | Correção de bug | PATCH |
+| `docs` | Documentação |
+| `style` | Formatação (não altera lógica) |
+| `refactor` | Refatoração |
+| `perf` | Melhoria de performance |
+| `test` | Testes |
+| `build` | Build ou dependências |
+| `ci` | CI/CD |
+| `chore` | Tarefas diversas |
+
+## Exemplos
+
+```
+feat: adiciona endpoint de treinos
+feat(api): adiciona validação de usuário
+fix: corrige cálculo de duração do treino
+docs: atualiza README com instruções de uso
+chore: atualiza dependências
+```
+
+## Breaking changes
+
+Use `!` no tipo ou footer `BREAKING CHANGE:`:
+
+```
+feat!: altera formato da API de treinos
+feat(api)!: remove suporte ao endpoint v1
+```
