@@ -28,7 +28,7 @@ await app.register(fastifySwagger, {
     servers: [
       {
         description: "Local",
-        url: "http://localhost:8080",
+        url: `http://localhost:${Number(process.env.PORT) || 8080}`,
       },
     ],
   },

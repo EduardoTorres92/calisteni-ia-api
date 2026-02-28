@@ -40,10 +40,10 @@ Crie um arquivo `.env` na raiz do projeto com:
 
 | Variável | Descrição |
 |----------|-----------|
-| `PORT` | Porta do servidor (padrão: 3000) |
+| `PORT` | Porta da API (padrão: 8080; frontend em 3000) |
 | `DATABASE_URL` | URL de conexão PostgreSQL (Neon ou local) |
 | `BETTER_AUTH_SECRET` | Chave secreta para autenticação (mín. 32 caracteres) |
-| `BETTER_AUTH_URL` | URL base da API (ex: `http://localhost:3000`) |
+| `BETTER_AUTH_URL` | URL base da API (ex: `http://localhost:8080`) |
 
 Para gerar um secret seguro:
 ```bash
@@ -56,7 +56,7 @@ npx @better-auth/cli secret
 # Desenvolvimento (com hot reload)
 pnpm dev
 
-# A API estará disponível em http://localhost:3000
+# API em http://localhost:8080 (frontend em 3000)
 ```
 
 ## 🗄️ Banco de Dados
@@ -73,7 +73,7 @@ pnpm prisma generate
 
 Acesse a documentação interativa em:
 
-- **http://localhost:3000/docs**
+- **http://localhost:8080/docs**
 
 Inclui:
 - **Coach API** – Rotas da aplicação (Swagger/OpenAPI)
