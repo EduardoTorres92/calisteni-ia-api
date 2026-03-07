@@ -59,14 +59,14 @@ app.register(fastifyapireference, {
   },
 });
 
+app.setValidatorCompiler(validatorCompiler);
+app.setSerializerCompiler(serializerCompiler);
+
 await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
 
 app.get("/swagger.json", async (request, reply) => {
   return reply.send(app.swagger());
 });
-
-app.setValidatorCompiler(validatorCompiler);
-app.setSerializerCompiler(serializerCompiler);
 
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",

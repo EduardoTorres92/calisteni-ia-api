@@ -1,7 +1,8 @@
 import { NotFoundError } from "../errors/index.js";
 import { WeekDay } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/db.js";
-interface Dto {
+
+interface InputDto {
   userId: string;
   name: string;
   workoutDays: Array<{
@@ -9,6 +10,26 @@ interface Dto {
     weekDay: WeekDay;
     isRest: boolean;
     estimatedDurationInSeconds: number;
+    coverImageUrl?: string | null;
+    exercises: Array<{
+      order: number;
+      name: string;
+      sets: number;
+      reps: number;
+      restTimeInSeconds: number;
+    }>;
+  }>;
+}
+
+interface OutputDto {
+  id: string;
+  name: string;
+  workoutDays: Array<{
+    name: string;
+    weekDay: WeekDay;
+    isRest: boolean;
+    estimatedDurationInSeconds: number;
+    coverImageUrl: string | null;
     exercises: Array<{
       order: number;
       name: string;
@@ -20,7 +41,7 @@ interface Dto {
 }
 
 export class CreateWorkoutPlan {
-  async execute(dto: Dto) {
+  async execute(dto: InputDto): Promise<OutputDto> {
     const existingWorkoutPlan = await prisma.workoutPlan.findFirst({
       where: {
         isActive: true,
@@ -45,7 +66,8 @@ export class CreateWorkoutPlan {
               weekDay: workoutDay.weekDay,
               isRest: workoutDay.isRest,
               estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
-              exercises: {
+              coverImageUrl: workoutDay.coverImageUrl ?? null,
+              workoutExercises: {
                 create: workoutDay.exercises.map((exercise) => ({
                   name: exercise.name,
                   order: exercise.order,
@@ -79,6 +101,7 @@ export class CreateWorkoutPlan {
           weekDay: day.weekDay,
           isRest: day.isRest,
           estimatedDurationInSeconds: day.estimatedDurationInSeconds,
+          coverImageUrl: day.coverImageUrl,
           exercises: day.workoutExercises
             .sort((a, b) => a.order - b.order)
             .map((ex) => ({
@@ -93,5 +116,3 @@ export class CreateWorkoutPlan {
     });
   }
 }
-
-export default new CreateWorkoutPlan();
