@@ -24,6 +24,20 @@ export const HomeResponseSchema = z.object({
   ),
 });
 
+export const StatsResponseSchema = z.object({
+  workoutStreak: z.number(),
+  consistencyByDay: z.record(
+    z.string(),
+    z.object({
+      workoutDayCompleted: z.boolean(),
+      workoutDayStarted: z.boolean(),
+    }),
+  ),
+  completedWorkoutsCount: z.number(),
+  conclusionRate: z.number(),
+  totalTimeInSeconds: z.number(),
+});
+
 export const ErrorSchema = z.object({
   error: z.string().trim().min(1),
   code: z.string().trim().min(1),
@@ -41,6 +55,34 @@ export const UpdateWorkoutSessionResponseSchema = z.object({
   id: z.uuid(),
   startedAt: z.iso.datetime(),
   completedAt: z.iso.datetime(),
+});
+
+export const GetWorkoutDayResponseSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  isRest: z.boolean(),
+  coverImageUrl: z.string().url().nullable(),
+  estimatedDurationInSeconds: z.number(),
+  exercises: z.array(
+    z.object({
+      id: z.uuid(),
+      name: z.string(),
+      order: z.number(),
+      workoutDayId: z.uuid(),
+      sets: z.number(),
+      reps: z.number(),
+      restTimeInSeconds: z.number(),
+    }),
+  ),
+  weekDay: z.enum(WeekDay),
+  sessions: z.array(
+    z.object({
+      id: z.uuid(),
+      workoutDayId: z.uuid(),
+      startedAt: z.iso.date(),
+      completedAt: z.iso.date().nullable(),
+    }),
+  ),
 });
 
 export const GetWorkoutPlanResponseSchema = z.object({
