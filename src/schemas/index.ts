@@ -38,6 +38,23 @@ export const StatsResponseSchema = z.object({
   totalTimeInSeconds: z.number(),
 });
 
+export const UserTrainDataSchema = z.object({
+  userId: z.string(),
+  weightInGrams: z.number().min(0),
+  heightInCentimeters: z.number().min(0),
+  age: z.number().min(0),
+  bodyFatPercentage: z.number().min(0).max(1),
+});
+
+export const UserTrainDataResponseSchema = z.object({
+  userId: z.string(),
+  userName: z.string(),
+  weightInGrams: z.number(),
+  heightInCentimeters: z.number(),
+  age: z.number(),
+  bodyFatPercentage: z.number(),
+});
+
 export const ErrorSchema = z.object({
   error: z.string().trim().min(1),
   code: z.string().trim().min(1),
