@@ -11,10 +11,15 @@ import {
 import { auth } from "../lib/auth.js";
 import {
   ErrorSchema,
+  GetWorkoutPlanResponseSchema,
+  UpdateWorkoutSessionBodySchema,
+  UpdateWorkoutSessionResponseSchema,
   WorkoutPlanSchema,
   WorkoutSessionResponseSchema,
 } from "../schemas/index.js";
+import { CompleteWorkoutSession } from "../usecases/complete-workout-session.js";
 import { CreateWorkoutPlan } from "../usecases/create-workout-plan.js";
+import { GetWorkoutPlan } from "../usecases/get-workout-plan.js";
 import { StartWorkoutSession } from "../usecases/start-workout-session.js";
 
 export const workoutPlanRoutes = async (app: FastifyInstance) => {
@@ -50,6 +55,56 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
           workoutDays: request.body.workoutDays,
         });
         return reply.status(201).send(workoutPlan);
+      } catch (error) {
+        app.log.error(error);
+        if (error instanceof NotFoundError) {
+          return reply.status(404).send({
+            error: error.message,
+            code: "NOT_FOUND",
+          });
+        }
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/:id",
+    schema: {
+      tags: ["Workout Plan"],
+      summary: "Get a workout plan by ID",
+      params: z.object({
+        id: z.uuid(),
+      }),
+      response: {
+        200: GetWorkoutPlanResponseSchema,
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const result = await new GetWorkoutPlan().execute({
+          userId: session.user.id,
+          workoutPlanId: request.params.id,
+        });
+
+        return reply.status(200).send(result);
       } catch (error) {
         app.log.error(error);
         if (error instanceof NotFoundError) {
@@ -122,6 +177,62 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
           return reply.status(409).send({
             error: error.message,
             code: "CONFLICT",
+          });
+        }
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/:workoutPlanId/days/:workoutDayId/sessions/:sessionId",
+    schema: {
+      tags: ["Workout Session"],
+      summary: "Complete a workout session",
+      params: z.object({
+        workoutPlanId: z.uuid(),
+        workoutDayId: z.uuid(),
+        sessionId: z.uuid(),
+      }),
+      body: UpdateWorkoutSessionBodySchema,
+      response: {
+        200: UpdateWorkoutSessionResponseSchema,
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const result = await new CompleteWorkoutSession().execute({
+          userId: session.user.id,
+          workoutPlanId: request.params.workoutPlanId,
+          workoutDayId: request.params.workoutDayId,
+          sessionId: request.params.sessionId,
+          completedAt: request.body.completedAt,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        if (error instanceof NotFoundError) {
+          return reply.status(404).send({
+            error: error.message,
+            code: "NOT_FOUND",
           });
         }
         return reply.status(500).send({

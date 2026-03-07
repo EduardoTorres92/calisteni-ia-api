@@ -27,7 +27,7 @@ interface TodayWorkoutDay {
   id: string;
   name: string;
   isRest: boolean;
-  weekDay: string;
+  weekDay: WeekDay;
   estimatedDurationInSeconds: number;
   coverImageUrl: string | null;
   exercisesCount: number;
