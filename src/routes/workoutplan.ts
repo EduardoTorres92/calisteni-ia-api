@@ -13,6 +13,7 @@ import {
   ErrorSchema,
   GetWorkoutDayResponseSchema,
   GetWorkoutPlanResponseSchema,
+  ListWorkoutPlansResponseSchema,
   UpdateWorkoutSessionBodySchema,
   UpdateWorkoutSessionResponseSchema,
   WorkoutPlanSchema,
@@ -22,9 +23,56 @@ import { CompleteWorkoutSession } from "../usecases/complete-workout-session.js"
 import { CreateWorkoutPlan } from "../usecases/create-workout-plan.js";
 import { GetWorkoutDay } from "../usecases/get-workout-day.js";
 import { GetWorkoutPlan } from "../usecases/get-workout-plan.js";
+import { ListWorkoutPlans } from "../usecases/list-workout-plans.js";
 import { StartWorkoutSession } from "../usecases/start-workout-session.js";
 
 export const workoutPlanRoutes = async (app: FastifyInstance) => {
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/",
+    schema: {
+      tags: ["Workout Plan"],
+      summary: "List workout plans",
+      querystring: z.object({
+        active: z
+          .string()
+          .transform((val) => val === "true")
+          .optional(),
+      }),
+      response: {
+        200: ListWorkoutPlansResponseSchema,
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const result = await new ListWorkoutPlans().execute({
+          userId: session.user.id,
+          active: request.query.active,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
   app.withTypeProvider<ZodTypeProvider>().route({
     method: "POST",
     url: "/",
