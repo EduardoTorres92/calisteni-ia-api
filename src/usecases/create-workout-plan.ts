@@ -70,7 +70,25 @@ export class CreateWorkoutPlan {
       if (!workoutPlan) {
         throw new NotFoundError("Workout plan not found");
       }
-      return workoutPlan;
+      return {
+        id: workoutPlan.id,
+        name: workoutPlan.name,
+        workoutDays: workoutPlan.workoutDays.map((day) => ({
+          name: day.name,
+          weekDay: day.weekDay,
+          isRest: day.isRest,
+          estimatedDurationInSeconds: day.estimatedDurationInSeconds,
+          exercises: day.workoutExercises
+            .sort((a, b) => a.order - b.order)
+            .map((ex) => ({
+              order: ex.order,
+              name: ex.name,
+              sets: ex.sets,
+              reps: ex.reps,
+              restTimeInSeconds: ex.restTimeInSeconds,
+            })),
+        })),
+      };
     });
   }
 }
