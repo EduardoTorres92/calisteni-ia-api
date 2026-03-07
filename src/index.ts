@@ -13,6 +13,7 @@ import {
 import { z } from "zod";
 
 import { auth } from "./lib/auth.js";
+import { homeRoutes } from "./routes/home.js";
 import { workoutPlanRoutes } from "./routes/workoutplan.js";
 
 const app = Fastify({
@@ -63,6 +64,7 @@ app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
 await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
+await app.register(homeRoutes, { prefix: "/home" });
 
 app.get("/swagger.json", async (request, reply) => {
   return reply.send(app.swagger());
