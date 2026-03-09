@@ -13,6 +13,7 @@ import {
 import { z } from "zod";
 
 import { auth } from "./lib/auth.js";
+import { aiRoutes } from "./routes/ai.js";
 import { homeRoutes } from "./routes/home.js";
 import { meRoutes } from "./routes/me.js";
 import { statsRoutes } from "./routes/stats.js";
@@ -40,7 +41,7 @@ await app.register(fastifySwagger, {
 });
 
 app.register(fastifyCors, {
-  origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
+  origin: ["http://localhost:3001", "http://127.0.0.1:3001"],
   credentials: true,
 });
 
@@ -69,6 +70,7 @@ await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
 await app.register(homeRoutes, { prefix: "/home" });
 await app.register(statsRoutes, { prefix: "/stats" });
 await app.register(meRoutes, { prefix: "/me" });
+await app.register(aiRoutes, { prefix: "/ai" });
 
 app.get("/swagger.json", async (request, reply) => {
   return reply.send(app.swagger());
