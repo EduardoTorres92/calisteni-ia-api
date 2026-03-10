@@ -40,7 +40,16 @@ interface ConsistencyDay {
 
 interface OutputDto {
   activeWorkoutPlanId: string;
-  todayWorkoutDay: TodayWorkoutDay;
+  todayWorkoutDay?: {
+    workoutPlanId: string;
+    id: string;
+    name: string;
+    isRest: boolean;
+    weekDay: WeekDay;
+    estimatedDurationInSeconds: number;
+    coverImageUrl: string | null;
+    exercisesCount: number;
+  };
   workoutStreak: number;
   consistencyByDay: Record<string, ConsistencyDay>;
 }
@@ -61,29 +70,29 @@ export class GetHomeData {
       },
     });
 
+
     if (!activeWorkoutPlan) {
-      throw new NotFoundError("Active workout plan not found");
+      throw new NotFoundError("No active workout plan found");
     }
 
     const todayWorkoutDayRecord = activeWorkoutPlan.workoutDays.find(
       (day) => day.weekDay === currentWeekDay,
     );
 
-    if (!todayWorkoutDayRecord) {
-      throw new NotFoundError("Workout day not found for today");
-    }
-
-    const todayWorkoutDay: TodayWorkoutDay = {
-      workoutPlanId: activeWorkoutPlan.id,
-      id: todayWorkoutDayRecord.id,
-      name: todayWorkoutDayRecord.name,
-      isRest: todayWorkoutDayRecord.isRest,
-      weekDay: todayWorkoutDayRecord.weekDay,
-      estimatedDurationInSeconds:
-        todayWorkoutDayRecord.estimatedDurationInSeconds,
-      coverImageUrl: todayWorkoutDayRecord.coverImageUrl ?? null,
-      exercisesCount: todayWorkoutDayRecord.workoutExercises.length,
-    };
+    const todayWorkoutDay: TodayWorkoutDay | undefined =
+      todayWorkoutDayRecord
+        ? {
+            workoutPlanId: activeWorkoutPlan.id,
+            id: todayWorkoutDayRecord.id,
+            name: todayWorkoutDayRecord.name,
+            isRest: todayWorkoutDayRecord.isRest,
+            weekDay: todayWorkoutDayRecord.weekDay,
+            estimatedDurationInSeconds:
+              todayWorkoutDayRecord.estimatedDurationInSeconds,
+            coverImageUrl: todayWorkoutDayRecord.coverImageUrl ?? null,
+            exercisesCount: todayWorkoutDayRecord.workoutExercises.length,
+          }
+        : undefined;
 
     const sundayStart = currentDate.day(0).startOf("day").toDate();
     const saturdayEnd = currentDate.day(6).endOf("day").toDate();
