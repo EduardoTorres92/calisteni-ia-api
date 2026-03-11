@@ -1,0 +1,52 @@
+---
+description: Stack, comandos e estrutura do projeto. Baseado no bootcamp-treinos.
+globs: ["**/*.ts", "**/package.json", "prisma/**"]
+alwaysApply: true
+---
+
+# Geral — Bootcamp Treinos API
+
+Este arquivo fornece orientações ao trabalhar com código neste repositório (baseado no [bootcamp-treinos](https://github.com/fullstackclubeducacao/bootcamp-treinos/tree/aula-01/.claude/rules)).
+
+## Stack
+
+- Node.js (ES modules)
+- pnpm como package manager
+- TypeScript (target ES2024)
+- Fastify com Zod type provider
+- Prisma ORM com PostgreSQL (usando pg adapter)
+- better-auth para autenticação
+- Zod v4
+
+## Comandos
+
+```bash
+# Desenvolvimento
+pnpm dev                    # Inicia servidor dev com watch mode (tsx --watch). Porta: PORT ou 8080.
+
+# Banco de dados
+pnpm prisma generate        # Gera o Prisma client (também roda no postinstall)
+pnpm prisma migrate dev      # Executa migrations em desenvolvimento
+pnpm prisma studio          # Abre o Prisma Studio GUI
+
+# Outros
+pnpm prepare                # Husky (hooks de git)
+```
+
+## Arquitetura
+
+### Estrutura de diretórios
+
+- `src/` — Código fonte da aplicação
+  - `lib/db.ts` — Setup do client do banco (Prisma com pg adapter)
+  - `lib/auth.ts` — Configuração do better-auth
+  - `errors/` — Classes de erro customizadas
+  - `schemas/` — Schemas Zod para validação de request/response (`src/schemas/index.ts`)
+  - `routes/` — Rotas da API (por domínio)
+  - `usecases/` — Classes de lógica de negócio (padrão use case)
+  - `generated/` — Prisma client gerado automaticamente (`generated/prisma/`)
+- `prisma/` — Schema e migrations do Prisma
+
+### Documentação da API
+
+Swagger/OpenAPI com Scalar disponível em `/docs` quando o servidor está rodando (porta via `PORT` ou 8080).

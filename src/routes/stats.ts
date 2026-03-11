@@ -13,6 +13,7 @@ export const statsRoutes = async (app: FastifyInstance) => {
     method: "GET",
     url: "/",
     schema: {
+      operationId: "getStats",
       tags: ["Stats"],
       summary: "Get workout stats for a date range",
       querystring: z.object({

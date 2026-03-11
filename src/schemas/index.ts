@@ -13,7 +13,7 @@ export const HomeResponseSchema = z.object({
     estimatedDurationInSeconds: z.number(),
     coverImageUrl: z.string().url().nullable(),
     exercisesCount: z.number(),
-  }),
+  }).optional(),
   workoutStreak: z.number(),
   consistencyByDay: z.record(
     z.string(),

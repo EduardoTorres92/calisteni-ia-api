@@ -1,0 +1,16 @@
+---
+description: Contexto do projeto Bootcamp Treinos API — índice das regras
+globs: ["**/*.ts", "**/*.json", "prisma/**"]
+alwaysApply: true
+---
+
+# Bootcamp Treinos API — Contexto do projeto
+
+API REST do Bootcamp Treinos. As convenções de código e arquitetura seguem o [bootcamp-treinos](https://github.com/fullstackclubeducacao/bootcamp-treinos/tree/aula-01/.claude/rules). Regras aplicadas automaticamente:
+
+- **general.mdc** — Stack (Node, pnpm, TypeScript, Fastify, Prisma, Zod v4, better-auth), comandos e estrutura de pastas.
+- **architecture.mdc** — Git (Conventional Commits, nunca commitar sem permissão), rotas Fastify (REST, Zod, use case, tratamento de erro) e use cases (DTOs, Prisma direto, erros em `src/errors`).
+- **typescript.mdc** — TypeScript (sem `any`, named exports, arrow functions, early returns), nomenclatura (kebab-case/PascalCase), Zod v4 e dayjs para datas.
+- **conventional-commits.mdc** — Formato de commits.
+
+Porta do servidor: `PORT` ou 8080. Documentação da API: `/docs` (Scalar).
