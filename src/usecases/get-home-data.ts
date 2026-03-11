@@ -193,13 +193,15 @@ export class GetHomeData {
 
     let streak = 0;
     let checkDate = currentDate.subtract(1, "day");
+    const maxLookbackDays = 90;
 
-    while (true) {
+    for (let i = 0; i < maxLookbackDays; i++) {
       const weekDay = DAY_INDEX_TO_WEEK_DAY[checkDate.day()];
       const workoutDay = workoutDaysByWeekDay.get(weekDay);
 
       if (!workoutDay) {
-        break;
+        checkDate = checkDate.subtract(1, "day");
+        continue;
       }
 
       if (workoutDay.isRest) {

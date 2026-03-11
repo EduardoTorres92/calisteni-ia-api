@@ -21,7 +21,25 @@ import { workoutPlanRoutes } from "./routes/workoutplan.js";
 
 const app = Fastify({
   logger: true,
+  ajv: {
+    customOptions: {
+      allErrors: true,
+    },
+  },
 });
+
+app.addContentTypeParser(
+  "application/json",
+  { parseAs: "string" },
+  (req, body, done) => {
+    try {
+      const str = (body as string).trim();
+      done(null, str.length > 0 ? JSON.parse(str) : undefined);
+    } catch (err) {
+      done(err as Error, undefined);
+    }
+  },
+);
 
 await app.register(fastifySwagger, {
   openapi: {
@@ -41,7 +59,12 @@ await app.register(fastifySwagger, {
 });
 
 app.register(fastifyCors, {
-  origin: ["http://localhost:3001", "http://127.0.0.1:3001"],
+  origin: [
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+  ],
   credentials: true,
 });
 
@@ -96,6 +119,9 @@ app.withTypeProvider<ZodTypeProvider>().route({
 app.route({
   method: ["GET", "POST"],
   url: "/api/auth/*",
+  schema: {
+    hide: true,
+  },
   async handler(request, reply) {
     try {
       // Construct request URL
@@ -129,7 +155,7 @@ app.route({
 });
 
 try {
-  await app.listen({ port: Number(process.env.PORT) || 8080 });
+  await app.listen({ port: Number(process.env.PORT) || 8080, host: "localhost" });
 } catch (err) {
   app.log.error(err);
   process.exit(1);
