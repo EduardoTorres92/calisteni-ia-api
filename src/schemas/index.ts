@@ -97,6 +97,7 @@ export const GetWorkoutDayResponseSchema = z.object({
   isRest: z.boolean(),
   coverImageUrl: z.string().url().nullable(),
   estimatedDurationInSeconds: z.number(),
+  targetMuscleGroups: z.array(z.string()),
   exercises: z.array(
     z.object({
       id: z.uuid(),

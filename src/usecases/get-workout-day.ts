@@ -50,6 +50,7 @@ interface OutputDto {
   exercises: ExerciseDto[];
   weekDay: WeekDay;
   sessions: SessionDto[];
+  targetMuscleGroups: string[];
 }
 
 export class GetWorkoutDay {
@@ -78,6 +79,21 @@ export class GetWorkoutDay {
       throw new NotFoundError("Workout day not found");
     }
 
+    const exerciseNames = workoutDay.workoutExercises.map(
+      (e: (typeof workoutDay)["workoutExercises"][number]) => e.name,
+    );
+
+    const catalogExercises = exerciseNames.length > 0
+      ? await prisma.exercise.findMany({
+          where: { name: { in: exerciseNames } },
+          select: { muscleGroups: true },
+        })
+      : [];
+
+    const targetMuscleGroups = [
+      ...new Set(catalogExercises.flatMap((e: { muscleGroups: string[] }) => e.muscleGroups)),
+    ];
+
     return {
       id: workoutDay.id,
       name: workoutDay.name,
@@ -85,6 +101,7 @@ export class GetWorkoutDay {
       coverImageUrl: workoutDay.coverImageUrl ?? null,
       estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
       weekDay: workoutDay.weekDay,
+      targetMuscleGroups,
       exercises: workoutDay.workoutExercises.map(
         (exercise: (typeof workoutDay)["workoutExercises"][number]) => ({
         id: exercise.id,
