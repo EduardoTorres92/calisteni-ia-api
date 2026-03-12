@@ -14,16 +14,14 @@ export const auth = betterAuth({
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
   },
-  account: {
-    skipStateCookieCheck: env.NODE_ENV === "development",
-  },
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
   plugins: [openAPI()],
   advanced: {
-    crossSubDomainCookies: {
-      enabled: true,
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
     },
   },
 });
