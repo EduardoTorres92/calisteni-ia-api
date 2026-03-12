@@ -7,6 +7,8 @@ interface OutputDto {
   heightInCentimeters: number;
   age: number;
   bodyFatPercentage: number;
+  calisthenicsLevel: string | null;
+  availableEquipment: string[];
 }
 
 export class GetUserTrainData {
@@ -32,6 +34,8 @@ export class GetUserTrainData {
       heightInCentimeters: user.heightInCentimeters,
       age: user.age,
       bodyFatPercentage: user.bodyFatPercentage,
+      calisthenicsLevel: user.calisthenicsLevel,
+      availableEquipment: user.availableEquipment,
     };
   }
 }

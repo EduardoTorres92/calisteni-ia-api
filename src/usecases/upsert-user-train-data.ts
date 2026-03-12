@@ -6,6 +6,8 @@ interface InputDto {
   heightInCentimeters: number;
   age: number;
   bodyFatPercentage: number;
+  calisthenicsLevel?: string;
+  availableEquipment?: string[];
 }
 
 interface OutputDto {
@@ -14,6 +16,8 @@ interface OutputDto {
   heightInCentimeters: number;
   age: number;
   bodyFatPercentage: number;
+  calisthenicsLevel: string | null;
+  availableEquipment: string[];
 }
 
 export class UpsertUserTrainData {
@@ -25,6 +29,12 @@ export class UpsertUserTrainData {
         heightInCentimeters: dto.heightInCentimeters,
         age: dto.age,
         bodyFatPercentage: dto.bodyFatPercentage,
+        ...(dto.calisthenicsLevel !== undefined && {
+          calisthenicsLevel: dto.calisthenicsLevel,
+        }),
+        ...(dto.availableEquipment !== undefined && {
+          availableEquipment: dto.availableEquipment,
+        }),
       },
     });
 
@@ -34,6 +44,8 @@ export class UpsertUserTrainData {
       heightInCentimeters: user.heightInCentimeters!,
       age: user.age!,
       bodyFatPercentage: user.bodyFatPercentage!,
+      calisthenicsLevel: user.calisthenicsLevel,
+      availableEquipment: user.availableEquipment,
     };
   }
 }

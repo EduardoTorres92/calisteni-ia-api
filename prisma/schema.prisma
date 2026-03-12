@@ -22,6 +22,8 @@ model User {
   heightInCentimeters Int?
   age                 Int?
   bodyFatPercentage   Int?
+  calisthenicsLevel   String?
+  availableEquipment  String[]
 
   @@map("user")
 }
