@@ -12,6 +12,20 @@ import {
 } from "fastify-type-provider-zod";
 import { z } from "zod";
 
+const envToLogger = {
+  development: {
+    transport: {
+      target: "pino-pretty",
+      options: {
+        translateTime: "HH:MM:ss Z",
+        ignore: "pid,hostname",
+      },
+    },
+  },
+  production: true,
+  test: false,
+};
+
 import { auth } from "./lib/auth.js";
 import { env } from "./lib/env.js";
 import { aiRoutes } from "./routes/ai.js";
@@ -21,7 +35,7 @@ import { statsRoutes } from "./routes/stats.js";
 import { workoutPlanRoutes } from "./routes/workoutplan.js";
 
 const app = Fastify({
-  logger: true,
+  logger: envToLogger[env.NODE_ENV],
   ajv: {
     customOptions: {
       allErrors: true,
@@ -152,7 +166,7 @@ app.route({
 
 try {
   await app.listen({
-    port: env.PORT
+    port: env.PORT,
   });
 } catch (err) {
   app.log.error(err);
