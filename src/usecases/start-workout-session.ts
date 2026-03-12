@@ -3,6 +3,7 @@ import {
   NotFoundError,
   WorkoutPlanNotActiveError,
 } from "../errors/index.js";
+import { Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../lib/db.js";
 
 interface InputDto {
@@ -35,6 +36,7 @@ export class StartWorkoutSession {
 
     const workoutDay = await prisma.workoutDay.findUnique({
       where: { id: dto.workoutDayId, workoutPlanId: dto.workoutPlanId },
+      include: { workoutExercises: { orderBy: { order: "asc" } } },
     });
 
     if (!workoutDay) {
@@ -52,13 +54,28 @@ export class StartWorkoutSession {
       throw new ConflictError("Workout session already started for this day");
     }
 
-    const session = await prisma.workoutSession.create({
-      data: {
-        workoutDayId: dto.workoutDayId,
-        startedAt: new Date(),
-      },
-    });
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const session = await tx.workoutSession.create({
+        data: {
+          workoutDayId: dto.workoutDayId,
+          startedAt: new Date(),
+        },
+      });
 
-    return { userWorkoutSessionId: session.id };
+      const setRecords = workoutDay.workoutExercises.flatMap(
+        (exercise: (typeof workoutDay)["workoutExercises"][number]) =>
+          Array.from({ length: exercise.sets }, (_, i) => ({
+            sessionId: session.id,
+            exerciseId: exercise.id,
+            setNumber: i + 1,
+          })),
+      );
+
+      if (setRecords.length > 0) {
+        await tx.workoutSet.createMany({ data: setRecords });
+      }
+
+      return { userWorkoutSessionId: session.id };
+    });
   }
 }

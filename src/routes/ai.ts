@@ -11,9 +11,14 @@ import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
 import z from "zod";
 
-import { WeekDay } from "../generated/prisma/enums.js";
+import {
+  ExerciseCategory,
+  ExerciseLevel,
+  WeekDay,
+} from "../generated/prisma/enums.js";
 import { auth } from "../lib/auth.js";
 import { CreateWorkoutPlan } from "../usecases/create-workout-plan.js";
+import { GetExerciseCatalog } from "../usecases/get-exercise-catalog.js";
 import { GetUserTrainData } from "../usecases/get-user-train-data.js";
 import { ListWorkoutPlans } from "../usecases/list-workout-plans.js";
 import { UpsertUserTrainData } from "../usecases/upsert-user-train-data.js";
@@ -44,6 +49,8 @@ const SYSTEM_PROMPT = `Você é um personal trainer virtual especialista em **ca
 Quando o usuário quiser criar um plano de treino:
 - Pergunte o objetivo (força, hipertrofia, skills, resistência), quantos dias por semana pode treinar e se tem restrições físicas ou lesões.
 - Poucas perguntas, simples e diretas.
+- **SEMPRE** chame a tool \`getExerciseCatalog\` antes de montar o plano para consultar os exercícios disponíveis no catálogo, filtrando por categoria e nível do usuário.
+- Use os nomes exatos dos exercícios retornados pelo catálogo ao criar o plano.
 - O plano DEVE ter exatamente 7 dias (MONDAY a SUNDAY).
 - Dias sem treino devem ter: \`isRest: true\`, \`exercises: []\`, \`estimatedDurationInSeconds: 0\`.
 - Chame a tool \`createWorkoutPlan\` para salvar o plano.
@@ -198,6 +205,34 @@ export const aiRoutes = async (app: FastifyInstance) => {
             execute: async () => {
               const listWorkoutPlans = new ListWorkoutPlans();
               return listWorkoutPlans.execute({ userId });
+            },
+          }),
+          getExerciseCatalog: tool({
+            description:
+              "Consulta o catálogo de exercícios de calistenia. Use ANTES de criar um plano de treino para selecionar exercícios adequados ao nível do usuário.",
+            inputSchema: z.object({
+              category: z
+                .enum(ExerciseCategory)
+                .optional()
+                .describe(
+                  "Filtrar por categoria: PUSH, PULL, LEGS, CORE ou SKILL",
+                ),
+              level: z
+                .enum(ExerciseLevel)
+                .optional()
+                .describe(
+                  "Filtrar por nível: BEGINNER, INTERMEDIATE ou ADVANCED",
+                ),
+              equipment: z
+                .array(z.string())
+                .optional()
+                .describe(
+                  "Filtrar por equipamentos disponíveis: barra_fixa, paralelas, aneis, faixa_elastica, peso_extra, corda, dumbbell",
+                ),
+            }),
+            execute: async (params) => {
+              const getExerciseCatalog = new GetExerciseCatalog();
+              return getExerciseCatalog.execute(params);
             },
           }),
           createWorkoutPlan: tool({

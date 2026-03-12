@@ -23,11 +23,22 @@ interface ExerciseDto {
   restTimeInSeconds: number;
 }
 
+interface WorkoutSetDto {
+  id: string;
+  exerciseId: string;
+  setNumber: number;
+  reps: number | null;
+  holdTimeInSeconds: number | null;
+  completed: boolean;
+  completedAt: string | null;
+}
+
 interface SessionDto {
   id: string;
   workoutDayId: string;
   startedAt: string;
   completedAt: string | null;
+  workoutSets?: WorkoutSetDto[];
 }
 
 interface OutputDto {
@@ -55,7 +66,11 @@ export class GetWorkoutDay {
       where: { id: dto.workoutDayId, workoutPlanId: dto.workoutPlanId },
       include: {
         workoutExercises: { orderBy: { order: "asc" } },
-        workoutSessions: true,
+        workoutSessions: {
+          include: {
+            workoutSets: { orderBy: [{ exerciseId: "asc" }, { setNumber: "asc" }] },
+          },
+        },
       },
     });
 
@@ -88,6 +103,17 @@ export class GetWorkoutDay {
         completedAt: session.completedAt
           ? dayjs.utc(session.completedAt).format("YYYY-MM-DD")
           : null,
+        workoutSets: session.workoutSets.map(
+          (ws: (typeof session)["workoutSets"][number]) => ({
+            id: ws.id,
+            exerciseId: ws.exerciseId,
+            setNumber: ws.setNumber,
+            reps: ws.reps,
+            holdTimeInSeconds: ws.holdTimeInSeconds,
+            completed: ws.completed,
+            completedAt: ws.completedAt?.toISOString() ?? null,
+          }),
+        ),
       })),
     };
   }

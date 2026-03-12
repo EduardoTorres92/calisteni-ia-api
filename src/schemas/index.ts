@@ -74,6 +74,23 @@ export const UpdateWorkoutSessionResponseSchema = z.object({
   completedAt: z.iso.datetime(),
 });
 
+export const WorkoutSetSchema = z.object({
+  id: z.uuid(),
+  exerciseId: z.uuid(),
+  setNumber: z.number(),
+  reps: z.number().nullable(),
+  holdTimeInSeconds: z.number().nullable(),
+  completed: z.boolean(),
+  completedAt: z.iso.datetime().nullable(),
+});
+
+export const ToggleWorkoutSetResponseSchema = z.object({
+  id: z.uuid(),
+  setNumber: z.number(),
+  completed: z.boolean(),
+  completedAt: z.iso.datetime().nullable(),
+});
+
 export const GetWorkoutDayResponseSchema = z.object({
   id: z.uuid(),
   name: z.string(),
@@ -98,6 +115,7 @@ export const GetWorkoutDayResponseSchema = z.object({
       workoutDayId: z.uuid(),
       startedAt: z.iso.date(),
       completedAt: z.iso.date().nullable(),
+      workoutSets: z.array(WorkoutSetSchema).optional(),
     }),
   ),
 });
