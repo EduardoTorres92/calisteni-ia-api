@@ -10,45 +10,83 @@
       "exercises": [
         {
           "order": 1,
-          "name": "Barbell Bench Press",
-          "sets": 4,
-          "reps": 8,
-          "restTimeInSeconds": 120
+          "name": "Jumping Jacks",
+          "phase": "WARMUP",
+          "sets": 2,
+          "reps": 20,
+          "restTimeInSeconds": 30
         },
         {
           "order": 2,
-          "name": "Pull-Ups",
+          "name": "Arm Circles",
+          "phase": "WARMUP",
+          "sets": 2,
+          "reps": 15,
+          "restTimeInSeconds": 30
+        },
+        {
+          "order": 3,
+          "name": "Barbell Bench Press",
+          "phase": "WORKOUT",
           "sets": 4,
           "reps": 8,
           "restTimeInSeconds": 120
         },
         {
-          "order": 3,
-          "name": "Seated Dumbbell Shoulder Press",
-          "sets": 3,
-          "reps": 10,
-          "restTimeInSeconds": 90
-        },
-        {
           "order": 4,
-          "name": "Barbell Rows",
-          "sets": 3,
-          "reps": 10,
-          "restTimeInSeconds": 90
+          "name": "Pull-Ups",
+          "phase": "WORKOUT",
+          "sets": 4,
+          "reps": 8,
+          "restTimeInSeconds": 120
         },
         {
           "order": 5,
+          "name": "Seated Dumbbell Shoulder Press",
+          "phase": "WORKOUT",
+          "sets": 3,
+          "reps": 10,
+          "restTimeInSeconds": 90
+        },
+        {
+          "order": 6,
+          "name": "Barbell Rows",
+          "phase": "WORKOUT",
+          "sets": 3,
+          "reps": 10,
+          "restTimeInSeconds": 90
+        },
+        {
+          "order": 7,
           "name": "Tricep Dips",
+          "phase": "WORKOUT",
           "sets": 3,
           "reps": 12,
           "restTimeInSeconds": 60
         },
         {
-          "order": 6,
+          "order": 8,
           "name": "Barbell Bicep Curls",
+          "phase": "WORKOUT",
           "sets": 3,
           "reps": 12,
           "restTimeInSeconds": 60
+        },
+        {
+          "order": 9,
+          "name": "Upper Body Stretch",
+          "phase": "COOLDOWN",
+          "sets": 1,
+          "reps": 1,
+          "restTimeInSeconds": 0
+        },
+        {
+          "order": 10,
+          "name": "Foam Rolling",
+          "phase": "COOLDOWN",
+          "sets": 1,
+          "reps": 1,
+          "restTimeInSeconds": 0
         }
       ]
     },
@@ -61,38 +99,67 @@
       "exercises": [
         {
           "order": 1,
-          "name": "Barbell Squats",
-          "sets": 4,
-          "reps": 8,
-          "restTimeInSeconds": 120
+          "name": "Bodyweight Squats",
+          "phase": "WARMUP",
+          "sets": 2,
+          "reps": 15,
+          "restTimeInSeconds": 30
         },
         {
           "order": 2,
-          "name": "Romanian Deadlifts",
+          "name": "Leg Swings",
+          "phase": "WARMUP",
+          "sets": 2,
+          "reps": 10,
+          "restTimeInSeconds": 30
+        },
+        {
+          "order": 3,
+          "name": "Barbell Squats",
+          "phase": "WORKOUT",
           "sets": 4,
           "reps": 8,
           "restTimeInSeconds": 120
         },
         {
-          "order": 3,
+          "order": 4,
+          "name": "Romanian Deadlifts",
+          "phase": "WORKOUT",
+          "sets": 4,
+          "reps": 8,
+          "restTimeInSeconds": 120
+        },
+        {
+          "order": 5,
           "name": "Walking Lunges",
+          "phase": "WORKOUT",
           "sets": 3,
           "reps": 12,
           "restTimeInSeconds": 90
         },
         {
-          "order": 4,
+          "order": 6,
           "name": "Leg Curl Machine",
+          "phase": "WORKOUT",
           "sets": 3,
           "reps": 12,
           "restTimeInSeconds": 60
         },
         {
-          "order": 5,
+          "order": 7,
           "name": "Standing Calf Raises",
+          "phase": "WORKOUT",
           "sets": 4,
           "reps": 15,
           "restTimeInSeconds": 60
+        },
+        {
+          "order": 8,
+          "name": "Lower Body Stretch",
+          "phase": "COOLDOWN",
+          "sets": 1,
+          "reps": 1,
+          "restTimeInSeconds": 0
         }
       ]
     },

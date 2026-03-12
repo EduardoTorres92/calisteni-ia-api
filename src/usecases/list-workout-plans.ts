@@ -1,4 +1,4 @@
-import { WeekDay } from "../generated/prisma/enums.js";
+import { WeekDay, ExercisePhase } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/db.js";
 
 interface InputDto {
@@ -11,6 +11,7 @@ interface ExerciseDto {
   name: string;
   order: number;
   workoutDayId: string;
+  phase: ExercisePhase;
   sets: number;
   reps: number;
   restTimeInSeconds: number;
@@ -75,6 +76,7 @@ export class ListWorkoutPlans {
           name: exercise.name,
           order: exercise.order,
           workoutDayId: exercise.workoutDayId,
+          phase: exercise.phase,
           sets: exercise.sets,
           reps: exercise.reps,
           restTimeInSeconds: exercise.restTimeInSeconds,

@@ -1,6 +1,6 @@
 import { NotFoundError } from "../errors/index.js";
 import { Prisma } from "../generated/prisma/client.js";
-import { WeekDay } from "../generated/prisma/enums.js";
+import { WeekDay, ExercisePhase } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/db.js";
 
 interface InputDto {
@@ -15,6 +15,7 @@ interface InputDto {
     exercises: Array<{
       order: number;
       name: string;
+      phase?: ExercisePhase;
       sets: number;
       reps: number;
       restTimeInSeconds: number;
@@ -34,6 +35,7 @@ interface OutputDto {
     exercises: Array<{
       order: number;
       name: string;
+      phase: ExercisePhase;
       sets: number;
       reps: number;
       restTimeInSeconds: number;
@@ -72,6 +74,7 @@ export class CreateWorkoutPlan {
                 create: workoutDay.exercises.map((exercise: InputDto["workoutDays"][number]["exercises"][number]) => ({
                   name: exercise.name,
                   order: exercise.order,
+                  phase: exercise.phase ?? "WORKOUT",
                   sets: exercise.sets,
                   reps: exercise.reps,
                   restTimeInSeconds: exercise.restTimeInSeconds,
@@ -108,6 +111,7 @@ export class CreateWorkoutPlan {
             .map((ex: (typeof day)["workoutExercises"][number]) => ({
               order: ex.order,
               name: ex.name,
+              phase: ex.phase,
               sets: ex.sets,
               reps: ex.reps,
               restTimeInSeconds: ex.restTimeInSeconds,

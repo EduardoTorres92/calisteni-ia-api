@@ -1,19 +1,21 @@
 import { z } from "zod";
 
-import { WeekDay } from "../generated/prisma/enums.js";
+import { ExercisePhase, WeekDay } from "../generated/prisma/enums.js";
 
 export const HomeResponseSchema = z.object({
   activeWorkoutPlanId: z.uuid(),
-  todayWorkoutDay: z.object({
-    workoutPlanId: z.uuid(),
-    id: z.uuid(),
-    name: z.string(),
-    isRest: z.boolean(),
-    weekDay: z.enum(WeekDay),
-    estimatedDurationInSeconds: z.number(),
-    coverImageUrl: z.string().url().nullable(),
-    exercisesCount: z.number(),
-  }).optional(),
+  todayWorkoutDay: z
+    .object({
+      workoutPlanId: z.uuid(),
+      id: z.uuid(),
+      name: z.string(),
+      isRest: z.boolean(),
+      weekDay: z.enum(WeekDay),
+      estimatedDurationInSeconds: z.number(),
+      coverImageUrl: z.string().url().nullable(),
+      exercisesCount: z.number(),
+    })
+    .optional(),
   workoutStreak: z.number(),
   consistencyByDay: z.record(
     z.string(),
@@ -104,6 +106,7 @@ export const GetWorkoutDayResponseSchema = z.object({
       name: z.string(),
       order: z.number(),
       workoutDayId: z.uuid(),
+      phase: z.enum(ExercisePhase),
       sets: z.number(),
       reps: z.number(),
       restTimeInSeconds: z.number(),
@@ -140,6 +143,7 @@ export const ListWorkoutPlansResponseSchema = z.array(
             name: z.string(),
             order: z.number(),
             workoutDayId: z.uuid(),
+            phase: z.enum(ExercisePhase),
             sets: z.number(),
             reps: z.number(),
             restTimeInSeconds: z.number(),
@@ -180,6 +184,7 @@ export const WorkoutPlanSchema = z.object({
         z.object({
           order: z.number().min(0),
           name: z.string().trim().min(1),
+          phase: z.enum(ExercisePhase).default("WORKOUT"),
           sets: z.number().min(1),
           reps: z.number().min(1),
           restTimeInSeconds: z.number().min(0),
