@@ -59,8 +59,9 @@ app.addContentTypeParser(
 await app.register(fastifySwagger, {
   openapi: {
     info: {
-      title: "Bootcamp Treinos API",
-      description: "API para o Bootcamp Treinos",
+      title: "Calisteni.IA API",
+      description:
+        "API REST para gerenciamento de treinos de calistenia com IA personal trainer, tracking por serie e catalogo de exercicios.",
       version: "1.0.0",
     },
     servers: [
@@ -113,16 +114,28 @@ app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",
   url: "/",
   schema: {
-    description: "Hello World",
-    tags: ["hello"],
+    description: "API info and healthcheck",
+    tags: ["Health"],
     response: {
       200: z.object({
-        message: z.string(),
+        name: z.string(),
+        version: z.string(),
+        status: z.string(),
+        docs_url: z.string(),
+        swagger_url: z.string(),
+        uptime_seconds: z.number(),
       }),
     },
   },
   handler: () => {
-    return { message: "Hello World" };
+    return {
+      name: "Calisteni.IA API",
+      version: "1.0.0",
+      status: "healthy",
+      docs_url: `${env.API_BASE_URL}/docs`,
+      swagger_url: `${env.API_BASE_URL}/swagger.json`,
+      uptime_seconds: Math.floor(process.uptime()),
+    };
   },
 });
 

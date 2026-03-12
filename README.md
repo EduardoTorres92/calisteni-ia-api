@@ -1,117 +1,220 @@
-# Calisteni IA - Bootcamp Treinos API
+# Calisteni.IA - Backend API
 
-API REST para gerenciamento de treinos e planos de exercícios, com autenticação integrada.
+> API REST inteligente para gerenciamento de treinos de calistenia com IA personal trainer integrada.
 
-## 🛠️ Tecnologias
+## Visao do Produto
 
-- **Runtime:** Node.js 24+
-- **Framework:** Fastify 5
-- **Banco de dados:** PostgreSQL (Neon)
-- **ORM:** Prisma 7
-- **Autenticação:** Better Auth (email/senha)
-- **Documentação:** Scalar (OpenAPI)
-- **Validação:** Zod + fastify-type-provider-zod
-- **Linguagem:** TypeScript
+Calisteni.IA e uma plataforma de treinos focada em **calistenia** (treino com peso corporal) que combina:
 
-## 📋 Pré-requisitos
+- **IA Personal Trainer** — Coach AI que cria planos de treino personalizados, considerando nivel, equipamentos disponiveis e objetivos do usuario
+- **Catalogo de Exercicios** — Base de 60+ exercicios de calistenia categorizados por nivel (iniciante/intermediario/avancado), grupo muscular e equipamento necessario
+- **Tracking Granular** — Acompanhamento de cada serie individual dentro de uma sessao de treino
+- **Metricas de Consistencia** — Streak de treinos, taxa de conclusao e historico de aderencia
 
-- [Node.js](https://nodejs.org/) >= 24.x
-- [pnpm](https://pnpm.io/) (gerenciador de pacotes)
-- Conta no [Neon](https://neon.tech/) (ou PostgreSQL local)
+## Arquitetura
 
-## 🚀 Instalação
+```
+┌─────────────────────────────────────────────────┐
+│                   Frontend                       │
+│              Next.js 16 (App Router)             │
+└──────────────────────┬──────────────────────────┘
+                       │ REST + Streaming (AI)
+┌──────────────────────▼──────────────────────────┐
+│                   Backend API                    │
+│                  Fastify 5 + Zod                 │
+│                                                  │
+│  ┌──────────┐  ┌──────────┐  ┌───────────────┐  │
+│  │  Routes   │  │ Usecases │  │  AI (OpenAI)  │  │
+│  │          │──▶│          │  │  GPT-4o-mini  │  │
+│  └──────────┘  └────┬─────┘  └───────────────┘  │
+│                     │                            │
+│              ┌──────▼──────┐                     │
+│              │   Prisma 7  │                     │
+│              └──────┬──────┘                     │
+└─────────────────────┼────────────────────────────┘
+                      │
+               ┌──────▼──────┐
+               │  PostgreSQL  │
+               │    (Neon)    │
+               └──────┬──────┘
+                      │
+               ┌──────▼──────┐
+               │ Better Auth  │
+               │   (Google)   │
+               └─────────────┘
+```
+
+## Stack
+
+| Camada | Tecnologia | Versao |
+|--------|-----------|--------|
+| Runtime | Node.js | 24+ |
+| Framework | Fastify | 5.7 |
+| ORM | Prisma | 7.4 |
+| Banco de Dados | PostgreSQL (Neon) | - |
+| Autenticacao | Better Auth (Google OAuth) | 1.4 |
+| IA | OpenAI GPT-4o-mini via AI SDK | 6.0 |
+| Validacao | Zod | 4.3 |
+| Documentacao | Scalar (OpenAPI) | 1.44 |
+| Testes | Vitest | 4.0 |
+| Linguagem | TypeScript | 5.9 |
+
+## Endpoints Principais
+
+### Autenticacao (`/api/auth/*`)
+
+| Metodo | Rota | Descricao |
+|--------|------|-----------|
+| GET/POST | `/api/auth/*` | Better Auth (Google OAuth) |
+
+### Home (`/home`)
+
+| Metodo | Rota | Descricao |
+|--------|------|-----------|
+| GET | `/home/:date` | Dados do dashboard (treino do dia, streak, consistencia) |
+
+### Perfil (`/me`)
+
+| Metodo | Rota | Descricao |
+|--------|------|-----------|
+| GET | `/me/` | Dados do usuario (peso, altura, nivel, equipamentos) |
+| PUT | `/me/` | Atualizar dados do usuario |
+
+### Estatisticas (`/stats`)
+
+| Metodo | Rota | Descricao |
+|--------|------|-----------|
+| GET | `/stats/` | Metricas (streak, taxa conclusao, tempo total) |
+
+### Planos de Treino (`/workout-plans`)
+
+| Metodo | Rota | Descricao |
+|--------|------|-----------|
+| GET | `/workout-plans/` | Listar planos |
+| POST | `/workout-plans/` | Criar plano |
+| GET | `/workout-plans/:id` | Detalhes do plano |
+| GET | `/workout-plans/:id/days/:dayId` | Detalhes do dia + exercicios + sets |
+| POST | `/workout-plans/:id/days/:dayId/sessions` | Iniciar sessao de treino |
+| PATCH | `/workout-plans/:id/days/:dayId/sessions/:sessionId` | Concluir sessao |
+| PATCH | `...sessions/:sessionId/sets/:setId` | Toggle set completo |
+
+### IA Coach (`/ai`)
+
+| Metodo | Rota | Descricao |
+|--------|------|-----------|
+| POST | `/ai/` | Chat com IA (streaming) — onboarding, criacao de planos, duvidas |
+
+## Modelo de Dados
+
+```
+User ──< WorkoutPlan ──< WorkoutDay ──< WorkoutExercise
+                                    ──< WorkoutSession ──< WorkoutSet
+
+Exercise (catalogo independente com 60+ exercicios)
+```
+
+### Principais Entidades
+
+- **User** — dados pessoais, nivel de calistenia, equipamentos disponiveis
+- **WorkoutPlan** — plano semanal com 7 dias (MONDAY-SUNDAY)
+- **WorkoutDay** — dia de treino ou descanso, com nome, capa e duracao estimada
+- **WorkoutExercise** — exercicio com series, reps e tempo de descanso
+- **WorkoutSession** — sessao iniciada pelo usuario com horario de inicio/conclusao
+- **WorkoutSet** — cada serie individual rastreada (completa/incompleta)
+- **Exercise** — catalogo de exercicios com categoria, nivel, grupos musculares e equipamento
+
+## Instalacao
 
 ```bash
-# Clone o repositório
 git clone https://github.com/EduardoTorres92/calisteni-ia.git
 cd calisteni-ia
 
-# Instale as dependências
 pnpm install
 
-# Configure as variáveis de ambiente
 cp .env.example .env
-# Edite o .env com suas credenciais
 ```
 
-## ⚙️ Variáveis de Ambiente
+### Variaveis de Ambiente
 
-Crie um arquivo `.env` na raiz do projeto com:
-
-| Variável | Descrição |
+| Variavel | Descricao |
 |----------|-----------|
-| `PORT` | Porta da API (padrão: 8080; frontend em 3000) |
-| `DATABASE_URL` | URL de conexão PostgreSQL (Neon ou local) |
-| `BETTER_AUTH_SECRET` | Chave secreta para autenticação (mín. 32 caracteres) |
-| `BETTER_AUTH_URL` | URL base da API (ex: `http://localhost:8080`) |
+| `PORT` | Porta da API (padrao: 3000) |
+| `DATABASE_URL` | URL PostgreSQL (Neon ou local) |
+| `BETTER_AUTH_SECRET` | Chave secreta para auth (min. 32 chars) |
+| `API_BASE_URL` | URL base da API (`http://localhost:3000`) |
+| `WEB_APP_BASE_URL` | URL do frontend (`http://localhost:3001`) |
+| `GOOGLE_CLIENT_ID` | Client ID do Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | Client Secret do Google OAuth |
+| `OPENAI_API_KEY` | Chave da API OpenAI |
 
-Para gerar um secret seguro:
+### Executando
+
 ```bash
-npx @better-auth/cli secret
-```
-
-## 📦 Executando o Projeto
-
-```bash
-# Desenvolvimento (com hot reload)
+# Desenvolvimento
 pnpm dev
 
-# API em http://localhost:8080 (frontend em 3000)
+# Testes
+pnpm test
+
+# Build
+pnpm build
+
+# Seed do catalogo de exercicios
+npx prisma db seed
 ```
 
-## 🗄️ Banco de Dados
+### Banco de Dados
 
 ```bash
-# Aplicar migrações
-pnpm prisma migrate dev
-
-# Gerar cliente Prisma (após alterar o schema)
-pnpm prisma generate
+pnpm prisma migrate dev    # Aplicar migracoes
+pnpm prisma generate       # Gerar cliente Prisma
+pnpm prisma db push        # Push direto (sem migracao)
 ```
 
-## 📚 Documentação da API
+## Documentacao Interativa
 
-Acesse a documentação interativa em:
+Com o servidor rodando, acesse:
 
-- **http://localhost:8080/docs**
+- **Swagger UI**: `http://localhost:3000/docs`
+- **OpenAPI JSON**: `http://localhost:3000/swagger.json`
+- **Healthcheck**: `GET /` retorna status, versao e links
 
-Inclui:
-- **Coach API** – Rotas da aplicação (Swagger/OpenAPI)
-- **Auth API** – Rotas de autenticação (Better Auth)
-
-## 📁 Estrutura do Projeto
+## Fluxo do Usuario
 
 ```
-├── prisma/
-│   ├── schema.prisma      # Schema do banco
-│   └── migrations/        # Migrações
-├── src/
-│   ├── index.ts           # Entrada da aplicação
-│   ├── lib/
-│   │   └── auth.ts        # Configuração Better Auth
-│   └── generated/
-│       └── prisma/        # Cliente Prisma gerado
-├── prisma.config.ts       # Config Prisma 7
-└── package.json
+1. Login (Google OAuth)
+        │
+2. Onboarding (chat com IA)
+   ├── Dados pessoais (nome, peso, altura, idade, % gordura)
+   ├── Nivel de calistenia (iniciante/intermediario/avancado)
+   └── Equipamentos disponiveis (barra fixa, paralelas, aneis, etc.)
+        │
+3. Criacao do Plano (IA seleciona exercicios do catalogo)
+   ├── Objetivo (forca, hipertrofia, skills, resistencia)
+   ├── Dias por semana (2-6)
+   └── Plano de 7 dias gerado automaticamente
+        │
+4. Treino Diario
+   ├── Iniciar sessao
+   ├── Marcar sets como completos
+   ├── Timer de descanso entre series
+   └── Concluir sessao
+        │
+5. Acompanhamento
+   ├── Streak de treinos consecutivos
+   ├── Taxa de conclusao
+   └── Historico de consistencia
 ```
 
-## 🔐 Autenticação
+## Proximos Passos
 
-Autenticação via **Better Auth** com email e senha. Endpoints em `/api/auth/*`:
+- [ ] Historico de evolucao (progressao de reps/carga ao longo do tempo)
+- [ ] Notificacoes push para lembrete de treino
+- [ ] Modo offline com sincronizacao
+- [ ] Suporte a video demonstrativo por exercicio
+- [ ] Exportacao de dados (PDF/CSV)
+- [ ] Planos de treino compartilhaveis
 
-- `POST /api/auth/sign-up/email` – Cadastro
-- `POST /api/auth/sign-in/email` – Login
-- Entre outros (ver docs em `/docs`)
-
-## 📝 Convenção de Commits
-
-O projeto usa [Conventional Commits](https://www.conventionalcommits.org/):
-
-- `feat:` – Nova funcionalidade
-- `fix:` – Correção de bug
-- `docs:` – Documentação
-- `chore:` – Tarefas diversas
-
-## 📄 Licença
+## Licenca
 
 ISC
