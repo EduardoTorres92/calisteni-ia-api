@@ -70,7 +70,8 @@ export class GetWorkoutDay {
       coverImageUrl: workoutDay.coverImageUrl ?? null,
       estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
       weekDay: workoutDay.weekDay,
-      exercises: workoutDay.workoutExercises.map((exercise) => ({
+      exercises: workoutDay.workoutExercises.map(
+        (exercise: (typeof workoutDay)["workoutExercises"][number]) => ({
         id: exercise.id,
         name: exercise.name,
         order: exercise.order,
@@ -79,7 +80,8 @@ export class GetWorkoutDay {
         reps: exercise.reps,
         restTimeInSeconds: exercise.restTimeInSeconds,
       })),
-      sessions: workoutDay.workoutSessions.map((session) => ({
+      sessions: workoutDay.workoutSessions.map(
+        (session: (typeof workoutDay)["workoutSessions"][number]) => ({
         id: session.id,
         workoutDayId: session.workoutDayId,
         startedAt: dayjs.utc(session.startedAt).format("YYYY-MM-DD"),

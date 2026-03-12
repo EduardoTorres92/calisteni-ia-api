@@ -57,18 +57,20 @@ export class ListWorkoutPlans {
       orderBy: { createdAt: "desc" },
     });
 
-    return workoutPlans.map((plan) => ({
+    return workoutPlans.map((plan: (typeof workoutPlans)[number]) => ({
       id: plan.id,
       name: plan.name,
       isActive: plan.isActive,
-      workoutDays: plan.workoutDays.map((day) => ({
+      workoutDays: plan.workoutDays.map(
+        (day: (typeof plan)["workoutDays"][number]) => ({
         id: day.id,
         name: day.name,
         weekDay: day.weekDay,
         isRest: day.isRest,
         coverImageUrl: day.coverImageUrl ?? null,
         estimatedDurationInSeconds: day.estimatedDurationInSeconds,
-        exercises: day.workoutExercises.map((exercise) => ({
+        exercises: day.workoutExercises.map(
+          (exercise: (typeof day)["workoutExercises"][number]) => ({
           id: exercise.id,
           name: exercise.name,
           order: exercise.order,

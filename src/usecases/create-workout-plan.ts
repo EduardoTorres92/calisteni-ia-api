@@ -1,4 +1,5 @@
 import { NotFoundError } from "../errors/index.js";
+import { Prisma } from "../generated/prisma/client.js";
 import { WeekDay } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/db.js";
 
@@ -47,7 +48,7 @@ export class CreateWorkoutPlan {
         isActive: true,
       },
     });
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       if (existingWorkoutPlan) {
         await tx.workoutPlan.update({
           where: { id: existingWorkoutPlan.id },
@@ -61,14 +62,14 @@ export class CreateWorkoutPlan {
           userId: dto.userId,
           isActive: true,
           workoutDays: {
-            create: dto.workoutDays.map((workoutDay) => ({
+            create: dto.workoutDays.map((workoutDay: InputDto["workoutDays"][number]) => ({
               name: workoutDay.name,
               weekDay: workoutDay.weekDay,
               isRest: workoutDay.isRest,
               estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
               coverImageUrl: workoutDay.coverImageUrl ?? null,
               workoutExercises: {
-                create: workoutDay.exercises.map((exercise) => ({
+                create: workoutDay.exercises.map((exercise: InputDto["workoutDays"][number]["exercises"][number]) => ({
                   name: exercise.name,
                   order: exercise.order,
                   sets: exercise.sets,
@@ -96,15 +97,15 @@ export class CreateWorkoutPlan {
       return {
         id: workoutPlan.id,
         name: workoutPlan.name,
-        workoutDays: workoutPlan.workoutDays.map((day) => ({
+        workoutDays: workoutPlan.workoutDays.map((day: (typeof workoutPlan)["workoutDays"][number]) => ({
           name: day.name,
           weekDay: day.weekDay,
           isRest: day.isRest,
           estimatedDurationInSeconds: day.estimatedDurationInSeconds,
           coverImageUrl: day.coverImageUrl,
           exercises: day.workoutExercises
-            .sort((a, b) => a.order - b.order)
-            .map((ex) => ({
+            .sort((a: { order: number }, b: { order: number }) => a.order - b.order)
+            .map((ex: (typeof day)["workoutExercises"][number]) => ({
               order: ex.order,
               name: ex.name,
               sets: ex.sets,

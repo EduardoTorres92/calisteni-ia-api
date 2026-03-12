@@ -76,7 +76,8 @@ export class GetHomeData {
     }
 
     const todayWorkoutDayRecord = activeWorkoutPlan.workoutDays.find(
-      (day) => day.weekDay === currentWeekDay,
+      (day: (typeof activeWorkoutPlan)["workoutDays"][number]) =>
+        day.weekDay === currentWeekDay,
     );
 
     const todayWorkoutDay: TodayWorkoutDay | undefined =
@@ -97,7 +98,9 @@ export class GetHomeData {
     const sundayStart = currentDate.day(0).startOf("day").toDate();
     const saturdayEnd = currentDate.day(6).endOf("day").toDate();
 
-    const workoutDayIds = activeWorkoutPlan.workoutDays.map((d) => d.id);
+    const workoutDayIds = activeWorkoutPlan.workoutDays.map(
+      (d: (typeof activeWorkoutPlan)["workoutDays"][number]) => d.id,
+    );
 
     const weekSessions = await prisma.workoutSession.findMany({
       where: {
@@ -186,8 +189,9 @@ export class GetHomeData {
     });
 
     const completedDates = new Set(
-      completedSessions.map((s) =>
-        dayjs.utc(s.startedAt).format("YYYY-MM-DD"),
+      completedSessions.map(
+        (s: { startedAt: Date }) =>
+          dayjs.utc(s.startedAt).format("YYYY-MM-DD"),
       ),
     );
 

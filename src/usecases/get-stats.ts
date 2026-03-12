@@ -50,7 +50,9 @@ export class GetStats {
       throw new NotFoundError("Active workout plan not found");
     }
 
-    const workoutDayIds = activeWorkoutPlan.workoutDays.map((d) => d.id);
+    const workoutDayIds = activeWorkoutPlan.workoutDays.map(
+      (d: (typeof activeWorkoutPlan)["workoutDays"][number]) => d.id,
+    );
 
     const sessions = await prisma.workoutSession.findMany({
       where: {
@@ -82,19 +84,25 @@ export class GetStats {
     }
 
     const completedWorkoutsCount = sessions.filter(
-      (s) => s.completedAt !== null,
+      (s: { completedAt: Date | null }) => s.completedAt !== null,
     ).length;
 
     const conclusionRate =
       sessions.length > 0 ? completedWorkoutsCount / sessions.length : 0;
 
     const totalTimeInSeconds = sessions
-      .filter((s) => s.completedAt !== null)
-      .reduce((total, s) => {
-        const start = dayjs.utc(s.startedAt);
-        const end = dayjs.utc(s.completedAt!);
-        return total + end.diff(start, "second");
-      }, 0);
+      .filter((s: { completedAt: Date | null }) => s.completedAt !== null)
+      .reduce(
+        (
+          total: number,
+          s: { startedAt: Date; completedAt: Date | null },
+        ): number => {
+          const start = dayjs.utc(s.startedAt);
+          const end = dayjs.utc(s.completedAt!);
+          return total + end.diff(start, "second");
+        },
+        0,
+      );
 
     const workoutStreak = await this.calculateStreak(
       activeWorkoutPlan.workoutDays,
@@ -139,8 +147,9 @@ export class GetStats {
     });
 
     const completedDates = new Set(
-      completedSessions.map((s) =>
-        dayjs.utc(s.startedAt).format("YYYY-MM-DD"),
+      completedSessions.map(
+        (s: { startedAt: Date }) =>
+          dayjs.utc(s.startedAt).format("YYYY-MM-DD"),
       ),
     );
 
