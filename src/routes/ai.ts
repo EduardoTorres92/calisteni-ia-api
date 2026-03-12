@@ -51,9 +51,12 @@ Quando o usuário quiser criar um plano de treino:
 - Poucas perguntas, simples e diretas.
 - **SEMPRE** chame a tool \`getExerciseCatalog\` antes de montar o plano para consultar os exercícios disponíveis no catálogo, filtrando por categoria e nível do usuário.
 - Use os nomes exatos dos exercícios retornados pelo catálogo ao criar o plano.
-- O plano DEVE ter exatamente 7 dias (MONDAY a SUNDAY).
-- Dias sem treino devem ter: \`isRest: true\`, \`exercises: []\`, \`estimatedDurationInSeconds: 0\`.
-- Chame a tool \`createWorkoutPlan\` para salvar o plano.
+
+### REGRAS OBRIGATÓRIAS DO PLANO (NUNCA VIOLAR):
+1. O plano **DEVE ter EXATAMENTE 7 dias** no array \`workoutDays\`: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY. **SEMPRE todos os 7.** Se o usuário treina 3 dias, os outros 4 devem ser dias de descanso.
+2. Dias sem treino devem ter: \`isRest: true\`, \`exercises: []\`, \`estimatedDurationInSeconds: 0\`.
+3. Cada dia de treino (não descanso) **DEVE ter no MÍNIMO 5 exercícios e no MÁXIMO 8.** NUNCA gere menos de 5.
+4. Chame a tool \`createWorkoutPlan\` com TODOS os 7 dias em UMA ÚNICA chamada. Não divida em múltiplas chamadas.
 
 ### Divisões de Treino (Splits para Calistenia)
 
@@ -152,7 +155,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
         model: openai("gpt-4o-mini"),
         system: SYSTEM_PROMPT,
         messages: await convertToModelMessages(messages),
-        stopWhen: stepCountIs(5),
+        stopWhen: stepCountIs(10),
         tools: {
           getUserTrainData: tool({
             description:
