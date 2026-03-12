@@ -134,7 +134,18 @@ SEMPRE forneça um \`coverImageUrl\` para cada dia de treino. Escolha com base n
 - https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCOgCHaUgNGronCvXmSzAMs1N3KgLdE5yHT6Ykj
 - https://gw8hy3fdcv.ufs.sh/f/ccoBDpLoAPCO85RVu3morROwZk5NPhs1jzH7X8TyEvLUCGxY
 
-Alterne entre as opções de cada categoria para variar. Dias de descanso usam a primeira imagem de Push.`;
+Alterne entre as opções de cada categoria para variar. Dias de descanso usam a primeira imagem de Push.
+
+## Vídeos de Referência
+
+Quando o usuário perguntar como executar um exercício, além da explicação textual sobre execução correta e erros comuns, SEMPRE inclua um link de vídeo do YouTube relevante no final da resposta usando o formato markdown:
+
+[Assista ao vídeo demonstrativo](https://www.youtube.com/watch?v=VIDEO_ID)
+
+- Escolha vídeos curtos e didáticos de canais confiáveis de calistenia/fitness em português quando possível.
+- O link DEVE ser uma URL válida do YouTube (youtube.com/watch?v= ou youtu.be/).
+- Inclua apenas UM vídeo por resposta.
+- O vídeo deve ser específico para o exercício perguntado.`;
 
 export const aiRoutes = async (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
