@@ -8,14 +8,15 @@ datasource db {
 }
 
 model User {
-  id                  String        @id
+  id                  String         @id
   name                String
-  email               String        @unique
-  emailVerified       Boolean       @default(false)
+  email               String         @unique
+  emailVerified       Boolean        @default(false)
   image               String?
-  createdAt           DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt           DateTime      @updatedAt @db.Timestamptz(6)
+  createdAt           DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime       @updatedAt @db.Timestamptz(6)
   workoutPlans        WorkoutPlan[]
+  workoutEvents       WorkoutEvent[]
   accounts            Account[]
   sessions            Session[]
   weightInGrams       Int?
@@ -108,6 +109,20 @@ model Exercise {
   updatedAt    DateTime         @updatedAt @db.Timestamptz(6)
 }
 
+model WorkoutEvent {
+  id        String         @id @default(cuid())
+  userId    String
+  type      WorkoutEventType
+  payload   Json?
+  createdAt DateTime       @default(now()) @db.Timestamptz(6)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("workout_event")
+}
+
 model Session {
   id        String   @id
   expiresAt DateTime
@@ -183,4 +198,10 @@ enum ExerciseLevel {
   BEGINNER
   INTERMEDIATE
   ADVANCED
+}
+
+enum WorkoutEventType {
+  WORKOUT_COMPLETED
+  WORKOUT_SKIPPED
+  WORKOUT_GENERATED
 }

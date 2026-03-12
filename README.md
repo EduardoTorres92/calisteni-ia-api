@@ -13,6 +13,17 @@ Calisteni.IA e uma plataforma de treinos focada em **calistenia** (treino com pe
 
 ## Arquitetura
 
+Diagrama simplificado (visão em camadas):
+
+```mermaid
+graph TD
+  A[Next.js Frontend] --> B[Fastify API]
+  B --> C[Prisma ORM]
+  C --> D[PostgreSQL Neon]
+```
+
+Visão detalhada:
+
 ```
 ┌─────────────────────────────────────────────────┐
 │                   Frontend                       │
@@ -108,7 +119,7 @@ Calisteni.IA e uma plataforma de treinos focada em **calistenia** (treino com pe
 
 ```
 User ──< WorkoutPlan ──< WorkoutDay ──< WorkoutExercise
-                                    ──< WorkoutSession ──< WorkoutSet
+     ──< WorkoutEvent                    ──< WorkoutSession ──< WorkoutSet
 
 Exercise (catalogo independente com 60+ exercicios)
 ```
@@ -122,6 +133,7 @@ Exercise (catalogo independente com 60+ exercicios)
 - **WorkoutSession** — sessao iniciada pelo usuario com horario de inicio/conclusao
 - **WorkoutSet** — cada serie individual rastreada (completa/incompleta)
 - **Exercise** — catalogo de exercicios com categoria, nivel, grupos musculares e equipamento
+- **WorkoutEvent** — eventos de treino (concluido, pulado, gerado) para analytics, metricas e recomendacoes de IA
 
 ## Instalacao
 
@@ -208,10 +220,10 @@ Com o servidor rodando, acesse:
 
 ## Proximos Passos
 
+- [ ] Emitir eventos (WorkoutCompleted, WorkoutSkipped, WorkoutGenerated) nos use cases para alimentar analytics e IA
 - [ ] Historico de evolucao (progressao de reps/carga ao longo do tempo)
 - [ ] Notificacoes push para lembrete de treino
 - [ ] Modo offline com sincronizacao
-- [ ] Suporte a video demonstrativo por exercicio
 - [ ] Exportacao de dados (PDF/CSV)
 - [ ] Planos de treino compartilhaveis
 

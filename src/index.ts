@@ -4,7 +4,7 @@ import { createRequire } from "node:module";
 
 import fastifyCors from "@fastify/cors";
 import fastifySwagger from "@fastify/swagger";
-import fastifyapireference from "@scalar/fastify-api-reference";
+import fastifySwaggerUi from "@fastify/swagger-ui";
 import Fastify from "fastify";
 import {
   jsonSchemaTransform,
@@ -78,27 +78,18 @@ await app.register(fastifySwagger, {
   transform: jsonSchemaTransform,
 });
 
+await app.register(fastifySwaggerUi, {
+  routePrefix: "/docs",
+  uiConfig: {
+    docExpansion: "list",
+    filter: true,
+    tryItOutEnabled: true,
+  },
+});
+
 app.register(fastifyCors, {
   origin: [env.WEB_APP_BASE_URL],
   credentials: true,
-});
-
-app.register(fastifyapireference, {
-  routePrefix: "/docs",
-  configuration: {
-    sources: [
-      {
-        title: "Coach API",
-        slug: "coach-api",
-        url: "/swagger.json",
-      },
-      {
-        title: "Auth API",
-        slug: "auth-api",
-        url: "/api/auth/open-api/generate-schema",
-      },
-    ],
-  },
 });
 
 app.setValidatorCompiler(validatorCompiler);
