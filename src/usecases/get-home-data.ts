@@ -196,7 +196,7 @@ export class GetHomeData {
     );
 
     let streak = 0;
-    let checkDate = currentDate.subtract(1, "day");
+    let checkDate = currentDate;
     const maxLookbackDays = 90;
 
     for (let i = 0; i < maxLookbackDays; i++) {
