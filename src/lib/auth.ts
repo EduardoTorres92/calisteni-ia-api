@@ -6,8 +6,8 @@ import { prisma } from "./db.js";
 import { env } from "./env.js";
 
 export const auth = betterAuth({
-  baseURL: env.API_BASE_URL,
-  trustedOrigins: [env.WEB_APP_BASE_URL],
+  baseURL: env.WEB_APP_BASE_URL,
+  trustedOrigins: [env.WEB_APP_BASE_URL, env.API_BASE_URL],
   socialProviders: {
     google: {
       clientId: env.GOOGLE_CLIENT_ID,
@@ -18,10 +18,4 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   plugins: [openAPI()],
-  advanced: {
-    defaultCookieAttributes: {
-      sameSite: "none",
-      secure: true,
-    },
-  },
 });
