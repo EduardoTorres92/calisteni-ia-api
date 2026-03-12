@@ -210,7 +210,7 @@ export const WorkoutPlanSchema = z.object({
           sets: z.number().min(1),
           reps: z.number().min(1),
           restTimeInSeconds: z.number().min(0),
-          demonstrationVideoUrl: youtubeUrlSchema.optional(),
+          demonstrationVideoUrl: youtubeUrlSchema.nullable().optional(),
         }),
       ),
     }),
