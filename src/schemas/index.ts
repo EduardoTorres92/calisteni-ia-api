@@ -2,6 +2,24 @@ import { z } from "zod";
 
 import { ExercisePhase, WeekDay } from "../generated/prisma/enums.js";
 
+const youtubeUrlSchema = z
+  .string()
+  .url()
+  .refine(
+    (url) => {
+      try {
+        const u = new URL(url);
+        if (u.hostname === "youtu.be") return u.pathname.length > 1;
+        if (u.hostname === "www.youtube.com" || u.hostname === "youtube.com")
+          return u.searchParams.has("v");
+        return false;
+      } catch {
+        return false;
+      }
+    },
+    { message: "Must be a YouTube URL (youtube.com/watch?v= or youtu.be/)" },
+  );
+
 export const HomeResponseSchema = z.object({
   activeWorkoutPlanId: z.uuid(),
   todayWorkoutDay: z
@@ -24,6 +42,8 @@ export const HomeResponseSchema = z.object({
       workoutDayStarted: z.boolean(),
     }),
   ),
+  completedWorkoutsCount: z.number(),
+  consistencyPercent: z.number(),
 });
 
 export const StatsResponseSchema = z.object({
@@ -110,6 +130,7 @@ export const GetWorkoutDayResponseSchema = z.object({
       sets: z.number(),
       reps: z.number(),
       restTimeInSeconds: z.number(),
+      demonstrationVideoUrl: youtubeUrlSchema.nullable(),
     }),
   ),
   weekDay: z.enum(WeekDay),
@@ -147,6 +168,7 @@ export const ListWorkoutPlansResponseSchema = z.array(
             sets: z.number(),
             reps: z.number(),
             restTimeInSeconds: z.number(),
+            demonstrationVideoUrl: youtubeUrlSchema.nullable(),
           }),
         ),
       }),
@@ -188,6 +210,7 @@ export const WorkoutPlanSchema = z.object({
           sets: z.number().min(1),
           reps: z.number().min(1),
           restTimeInSeconds: z.number().min(0),
+          demonstrationVideoUrl: youtubeUrlSchema.optional(),
         }),
       ),
     }),

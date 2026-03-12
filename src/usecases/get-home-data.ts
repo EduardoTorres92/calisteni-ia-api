@@ -52,6 +52,8 @@ interface OutputDto {
   };
   workoutStreak: number;
   consistencyByDay: Record<string, ConsistencyDay>;
+  completedWorkoutsCount: number;
+  consistencyPercent: number;
 }
 
 export class GetHomeData {
@@ -123,11 +125,24 @@ export class GetHomeData {
       currentDate,
     );
 
+    const allSessions = await prisma.workoutSession.findMany({
+      where: { workoutDayId: { in: workoutDayIds } },
+    });
+    const completedWorkoutsCount = allSessions.filter(
+      (s: { completedAt: Date | null }) => s.completedAt !== null,
+    ).length;
+    const consistencyPercent =
+      allSessions.length > 0
+        ? Math.round((completedWorkoutsCount / allSessions.length) * 100)
+        : 0;
+
     return {
       activeWorkoutPlanId: activeWorkoutPlan.id,
       todayWorkoutDay,
       workoutStreak,
       consistencyByDay,
+      completedWorkoutsCount,
+      consistencyPercent,
     };
   }
 

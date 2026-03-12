@@ -19,6 +19,7 @@ interface InputDto {
       sets: number;
       reps: number;
       restTimeInSeconds: number;
+      demonstrationVideoUrl?: string | null;
     }>;
   }>;
 }
@@ -39,6 +40,7 @@ interface OutputDto {
       sets: number;
       reps: number;
       restTimeInSeconds: number;
+      demonstrationVideoUrl: string | null;
     }>;
   }>;
 }
@@ -78,6 +80,7 @@ export class CreateWorkoutPlan {
                   sets: exercise.sets,
                   reps: exercise.reps,
                   restTimeInSeconds: exercise.restTimeInSeconds,
+                  demonstrationVideoUrl: exercise.demonstrationVideoUrl ?? null,
                 })),
               },
             })),
@@ -115,6 +118,7 @@ export class CreateWorkoutPlan {
               sets: ex.sets,
               reps: ex.reps,
               restTimeInSeconds: ex.restTimeInSeconds,
+              demonstrationVideoUrl: ex.demonstrationVideoUrl ?? null,
             })),
         })),
       };

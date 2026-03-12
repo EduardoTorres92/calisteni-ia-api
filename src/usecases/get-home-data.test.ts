@@ -36,10 +36,15 @@ describe("GetHomeData", () => {
       { startedAt: new Date("2025-03-05T10:00:00Z"), completedAt: new Date("2025-03-05T11:00:00Z") } as any,
     ];
 
+    const allSessions = [
+      { startedAt: new Date("2025-03-05T10:00:00Z"), completedAt: new Date("2025-03-05T11:00:00Z") } as any,
+    ];
+
     prismaMock.workoutPlan.findFirst.mockResolvedValue(mockActivePlan);
     prismaMock.workoutSession.findMany
       .mockResolvedValueOnce(weekSessions)
-      .mockResolvedValueOnce([]);
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(allSessions);
 
     const useCase = new GetHomeData();
     const result = await useCase.execute({ userId: "user-id-1", date });
@@ -53,6 +58,8 @@ describe("GetHomeData", () => {
       workoutDayCompleted: true,
       workoutDayStarted: true,
     });
+    expect(result.completedWorkoutsCount).toBe(1);
+    expect(result.consistencyPercent).toBe(100);
   });
 
   it("should throw NotFoundError when no active plan", async () => {
@@ -65,7 +72,7 @@ describe("GetHomeData", () => {
     ).rejects.toThrow(NotFoundError);
   });
 
-  it("should throw NotFoundError when no workout day for today", async () => {
+  it("should return home data with todayWorkoutDay undefined when no workout day for today", async () => {
     prismaMock.workoutPlan.findFirst.mockResolvedValue({
       id: "plan-id-1",
       userId: "user-id-1",
@@ -73,11 +80,17 @@ describe("GetHomeData", () => {
         { id: "day-mon-id", name: "Leg Day", weekDay: WeekDay.MONDAY, isRest: false, estimatedDurationInSeconds: 3600, coverImageUrl: null, workoutExercises: [] },
       ],
     } as any);
+    prismaMock.workoutSession.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([]);
 
     const useCase = new GetHomeData();
+    const result = await useCase.execute({ userId: "user-id-1", date: "2025-03-05" });
 
-    await expect(
-      useCase.execute({ userId: "user-id-1", date: "2025-03-05" }),
-    ).rejects.toThrow(NotFoundError);
+    expect(result.todayWorkoutDay).toBeUndefined();
+    expect(result.activeWorkoutPlanId).toBe("plan-id-1");
+    expect(result.completedWorkoutsCount).toBe(0);
+    expect(result.consistencyPercent).toBe(0);
   });
 });

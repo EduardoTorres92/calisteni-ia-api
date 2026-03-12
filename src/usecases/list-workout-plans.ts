@@ -15,6 +15,7 @@ interface ExerciseDto {
   sets: number;
   reps: number;
   restTimeInSeconds: number;
+  demonstrationVideoUrl: string | null;
 }
 
 interface WorkoutDayDto {
@@ -80,6 +81,7 @@ export class ListWorkoutPlans {
           sets: exercise.sets,
           reps: exercise.reps,
           restTimeInSeconds: exercise.restTimeInSeconds,
+          demonstrationVideoUrl: exercise.demonstrationVideoUrl ?? null,
         })),
       })),
     }));

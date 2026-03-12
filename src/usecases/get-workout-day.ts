@@ -22,6 +22,7 @@ interface ExerciseDto {
   sets: number;
   reps: number;
   restTimeInSeconds: number;
+  demonstrationVideoUrl: string | null;
 }
 
 interface WorkoutSetDto {
@@ -113,6 +114,7 @@ export class GetWorkoutDay {
         sets: exercise.sets,
         reps: exercise.reps,
         restTimeInSeconds: exercise.restTimeInSeconds,
+        demonstrationVideoUrl: exercise.demonstrationVideoUrl ?? null,
       })),
       sessions: workoutDay.workoutSessions.map(
         (session: (typeof workoutDay)["workoutSessions"][number]) => ({

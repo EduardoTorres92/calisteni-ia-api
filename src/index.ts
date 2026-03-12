@@ -1,5 +1,7 @@
 import "dotenv/config";
 
+import { createRequire } from "node:module";
+
 import fastifyCors from "@fastify/cors";
 import fastifySwagger from "@fastify/swagger";
 import fastifyapireference from "@scalar/fastify-api-reference";
@@ -11,6 +13,8 @@ import {
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
 import { z } from "zod";
+
+import { prisma } from "./lib/db.js";
 
 const envToLogger = {
   development: {
@@ -110,11 +114,52 @@ app.get("/swagger.json", async (request, reply) => {
   return reply.send(app.swagger());
 });
 
+const pkg = createRequire(import.meta.url)("../package.json") as {
+  name: string;
+  version: string;
+};
+
+app.withTypeProvider<ZodTypeProvider>().route({
+  method: "GET",
+  url: "/health",
+  schema: {
+    description: "Health check and service status (database connectivity)",
+    tags: ["Health"],
+    response: {
+      200: z.object({
+        status: z.enum(["ok", "degraded"]),
+        service: z.string(),
+        version: z.string(),
+        uptime: z.number(),
+        timestamp: z.string().datetime(),
+        database: z.enum(["connected", "error"]),
+      }),
+    },
+  },
+  handler: async () => {
+    let database: "connected" | "error";
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      database = "connected";
+    } catch {
+      database = "error";
+    }
+    return {
+      status: (database === "connected" ? "ok" : "degraded") as "ok" | "degraded",
+      service: pkg.name,
+      version: pkg.version,
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      database,
+    };
+  },
+});
+
 app.withTypeProvider<ZodTypeProvider>().route({
   method: "GET",
   url: "/",
   schema: {
-    description: "API info and healthcheck",
+    description: "API info and links",
     tags: ["Health"],
     response: {
       200: z.object({
@@ -130,7 +175,7 @@ app.withTypeProvider<ZodTypeProvider>().route({
   handler: () => {
     return {
       name: "Calisteni.IA API",
-      version: "1.0.0",
+      version: pkg.version,
       status: "healthy",
       docs_url: `${env.API_BASE_URL}/docs`,
       swagger_url: `${env.API_BASE_URL}/swagger.json`,

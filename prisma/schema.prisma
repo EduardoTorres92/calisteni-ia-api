@@ -55,18 +55,19 @@ model WorkoutDay {
 }
 
 model WorkoutExercise {
-  id                String        @id @default(uuid())
-  name              String
-  order             Int
-  workoutDayId      String
-  phase             ExercisePhase @default(WORKOUT)
-  sets              Int
-  reps              Int
-  restTimeInSeconds Int
-  createdAt         DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime      @updatedAt @db.Timestamptz(6)
-  workoutDay        WorkoutDay    @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
-  workoutSets       WorkoutSet[]
+  id                     String        @id @default(uuid())
+  name                   String
+  order                  Int
+  workoutDayId           String
+  phase                  ExercisePhase  @default(WORKOUT)
+  sets                   Int
+  reps                   Int
+  restTimeInSeconds      Int
+  demonstrationVideoUrl  String?
+  createdAt              DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime      @updatedAt @db.Timestamptz(6)
+  workoutDay             WorkoutDay    @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  workoutSets            WorkoutSet[]
 }
 
 model WorkoutSession {
