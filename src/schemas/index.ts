@@ -77,6 +77,35 @@ export const UserTrainDataResponseSchema = z.object({
   bodyFatPercentage: z.number(),
 });
 
+export const ExerciseProgressionItemSchema = z.object({
+  exerciseName: z.string(),
+  previousTargetReps: z.number().int().nullable(),
+  previousActualReps: z.number().int().nullable(),
+  previousDate: z.string().nullable(),
+  lastTargetReps: z.number().int(),
+  lastActualReps: z.number().int(),
+  lastDate: z.string(),
+  suggestedReps: z.number().int(),
+  delta: z.number().int(),
+});
+
+export const ProgressionResponseSchema = z.object({
+  progressions: z.array(ExerciseProgressionItemSchema),
+});
+
+export const PerformanceHistoryDataPointSchema = z.object({
+  date: z.string(),
+  exerciseName: z.string(),
+  targetReps: z.number().int(),
+  actualReps: z.number().int(),
+  difficulty: z.number().int(),
+  completed: z.boolean(),
+});
+
+export const PerformanceHistoryResponseSchema = z.object({
+  history: z.array(PerformanceHistoryDataPointSchema),
+});
+
 export const ErrorSchema = z.object({
   error: z.string().trim().min(1),
   code: z.string().trim().min(1),
@@ -86,8 +115,17 @@ export const WorkoutSessionResponseSchema = z.object({
   userWorkoutSessionId: z.uuid(),
 });
 
+export const ExercisePerformanceItemSchema = z.object({
+  workoutExerciseId: z.uuid(),
+  targetReps: z.number().int().min(1),
+  actualReps: z.number().int().min(0),
+  difficulty: z.number().int().min(1).max(10),
+  completed: z.boolean(),
+});
+
 export const UpdateWorkoutSessionBodySchema = z.object({
   completedAt: z.iso.datetime(),
+  performance: z.array(ExercisePerformanceItemSchema).optional(),
 });
 
 export const UpdateWorkoutSessionResponseSchema = z.object({

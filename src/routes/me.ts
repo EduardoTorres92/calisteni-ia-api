@@ -1,13 +1,18 @@
 import { fromNodeHeaders } from "better-auth/node";
 import { FastifyInstance } from "fastify";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
+import { z } from "zod";
 
 import { auth } from "../lib/auth.js";
 import {
   ErrorSchema,
+  PerformanceHistoryResponseSchema,
+  ProgressionResponseSchema,
   UserTrainDataResponseSchema,
   UserTrainDataSchema,
 } from "../schemas/index.js";
+import { GetPerformanceHistory } from "../usecases/get-performance-history.js";
+import { GetProgression } from "../usecases/get-progression.js";
 import { GetUserTrainData } from "../usecases/get-user-train-data.js";
 import { UpsertUserTrainData } from "../usecases/upsert-user-train-data.js";
 
@@ -82,6 +87,96 @@ export const meRoutes = async (app: FastifyInstance) => {
           heightInCentimeters: request.body.heightInCentimeters,
           age: request.body.age,
           bodyFatPercentage: request.body.bodyFatPercentage,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/progression",
+    schema: {
+      operationId: "getProgression",
+      tags: ["Me"],
+      summary: "Get exercise progression (adaptive reps suggestion)",
+      response: {
+        200: ProgressionResponseSchema,
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const result = await new GetProgression().execute({
+          userId: session.user.id,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/performance-history",
+    schema: {
+      operationId: "getPerformanceHistory",
+      tags: ["Me"],
+      summary: "Get performance history for charts",
+      querystring: z.object({
+        from: z.string().optional(),
+        to: z.string().optional(),
+        exerciseName: z.string().optional(),
+        limit: z.coerce.number().int().min(1).max(200).optional(),
+      }),
+      response: {
+        200: PerformanceHistoryResponseSchema,
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const result = await new GetPerformanceHistory().execute({
+          userId: session.user.id,
+          from: request.query.from,
+          to: request.query.to,
+          exerciseName: request.query.exerciseName,
+          limit: request.query.limit,
         });
 
         return reply.status(200).send(result);

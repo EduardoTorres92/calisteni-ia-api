@@ -334,6 +334,7 @@ export const workoutPlanRoutes = async (app: FastifyInstance) => {
           workoutDayId: request.params.workoutDayId,
           sessionId: request.params.sessionId,
           completedAt: request.body.completedAt,
+          performance: request.body.performance,
         });
 
         return reply.status(200).send(result);

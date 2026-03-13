@@ -1,5 +1,14 @@
+import { Prisma } from "../generated/prisma/client.js";
 import { NotFoundError } from "../errors/index.js";
 import { prisma } from "../lib/db.js";
+
+interface PerformanceItemDto {
+  workoutExerciseId: string;
+  targetReps: number;
+  actualReps: number;
+  difficulty: number;
+  completed: boolean;
+}
 
 interface InputDto {
   userId: string;
@@ -7,6 +16,7 @@ interface InputDto {
   workoutDayId: string;
   sessionId: string;
   completedAt: string;
+  performance?: PerformanceItemDto[];
 }
 
 interface OutputDto {
@@ -27,6 +37,7 @@ export class CompleteWorkoutSession {
 
     const workoutDay = await prisma.workoutDay.findUnique({
       where: { id: dto.workoutDayId, workoutPlanId: dto.workoutPlanId },
+      include: { workoutExercises: true },
     });
 
     if (!workoutDay) {
@@ -41,9 +52,37 @@ export class CompleteWorkoutSession {
       throw new NotFoundError("Workout session not found");
     }
 
-    const updated = await prisma.workoutSession.update({
-      where: { id: dto.sessionId },
-      data: { completedAt: new Date(dto.completedAt) },
+    const exerciseNamesById = new Map(
+      workoutDay.workoutExercises.map((e) => [e.id, e.name]),
+    );
+
+    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const updatedSession = await tx.workoutSession.update({
+        where: { id: dto.sessionId },
+        data: { completedAt: new Date(dto.completedAt) },
+      });
+
+      if (dto.performance?.length) {
+        const validExerciseIds = new Set(workoutDay.workoutExercises.map((e) => e.id));
+        const records = dto.performance
+          .filter((p) => validExerciseIds.has(p.workoutExerciseId))
+          .map((p) => ({
+            userId: dto.userId,
+            workoutSessionId: dto.sessionId,
+            workoutExerciseId: p.workoutExerciseId,
+            exerciseName: exerciseNamesById.get(p.workoutExerciseId) ?? "Unknown",
+            targetReps: p.targetReps,
+            actualReps: p.actualReps,
+            difficulty: p.difficulty,
+            completed: p.completed,
+          }));
+
+        if (records.length > 0) {
+          await tx.exercisePerformanceRecord.createMany({ data: records });
+        }
+      }
+
+      return updatedSession;
     });
 
     return {

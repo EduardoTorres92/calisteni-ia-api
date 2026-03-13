@@ -8,23 +8,24 @@ datasource db {
 }
 
 model User {
-  id                  String         @id
-  name                String
-  email               String         @unique
-  emailVerified       Boolean        @default(false)
-  image               String?
-  createdAt           DateTime       @default(now()) @db.Timestamptz(6)
-  updatedAt           DateTime       @updatedAt @db.Timestamptz(6)
-  workoutPlans        WorkoutPlan[]
-  workoutEvents       WorkoutEvent[]
-  accounts            Account[]
-  sessions            Session[]
-  weightInGrams       Int?
-  heightInCentimeters Int?
-  age                 Int?
-  bodyFatPercentage   Int?
-  calisthenicsLevel   String?
-  availableEquipment  String[]
+  id                         String                      @id
+  name                       String
+  email                      String                      @unique
+  emailVerified              Boolean                     @default(false)
+  image                      String?
+  createdAt                  DateTime                    @default(now()) @db.Timestamptz(6)
+  updatedAt                  DateTime                    @updatedAt @db.Timestamptz(6)
+  workoutPlans               WorkoutPlan[]
+  workoutEvents              WorkoutEvent[]
+  exercisePerformanceRecords ExercisePerformanceRecord[]
+  accounts                   Account[]
+  sessions                   Session[]
+  weightInGrams              Int?
+  heightInCentimeters        Int?
+  age                        Int?
+  bodyFatPercentage          Int?
+  calisthenicsLevel          String?
+  availableEquipment         String[]
 
   @@map("user")
 }
@@ -56,30 +57,32 @@ model WorkoutDay {
 }
 
 model WorkoutExercise {
-  id                     String        @id @default(uuid())
-  name                   String
-  order                  Int
-  workoutDayId           String
-  phase                  ExercisePhase  @default(WORKOUT)
-  sets                   Int
-  reps                   Int
-  restTimeInSeconds      Int
-  demonstrationVideoUrl  String?
-  createdAt              DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt              DateTime      @updatedAt @db.Timestamptz(6)
-  workoutDay             WorkoutDay    @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
-  workoutSets            WorkoutSet[]
+  id                         String                      @id @default(uuid())
+  name                       String
+  order                      Int
+  workoutDayId                String
+  phase                      ExercisePhase               @default(WORKOUT)
+  sets                       Int
+  reps                       Int
+  restTimeInSeconds          Int
+  demonstrationVideoUrl       String?
+  createdAt                  DateTime                    @default(now()) @db.Timestamptz(6)
+  updatedAt                  DateTime                    @updatedAt @db.Timestamptz(6)
+  workoutDay                 WorkoutDay                  @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  workoutSets                WorkoutSet[]
+  exercisePerformanceRecords ExercisePerformanceRecord[]
 }
 
 model WorkoutSession {
-  id           String       @id @default(uuid())
-  workoutDayId String
-  workoutDay   WorkoutDay   @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
-  startedAt    DateTime     @db.Timestamptz(6)
-  completedAt  DateTime?    @db.Timestamptz(6)
-  createdAt    DateTime     @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime     @updatedAt @db.Timestamptz(6)
-  workoutSets  WorkoutSet[]
+  id                         String                      @id @default(uuid())
+  workoutDayId               String
+  workoutDay                 WorkoutDay                  @relation(fields: [workoutDayId], references: [id], onDelete: Cascade)
+  startedAt                 DateTime                    @db.Timestamptz(6)
+  completedAt                DateTime?                   @db.Timestamptz(6)
+  createdAt                  DateTime                    @default(now()) @db.Timestamptz(6)
+  updatedAt                  DateTime                    @updatedAt @db.Timestamptz(6)
+  workoutSets                WorkoutSet[]
+  exercisePerformanceRecords ExercisePerformanceRecord[]
 }
 
 model WorkoutSet {
@@ -95,6 +98,26 @@ model WorkoutSet {
   updatedAt         DateTime        @updatedAt @db.Timestamptz(6)
   session           WorkoutSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   exercise          WorkoutExercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+}
+
+model ExercisePerformanceRecord {
+  id                 String           @id @default(uuid())
+  userId             String
+  workoutSessionId   String
+  workoutExerciseId  String
+  exerciseName       String
+  targetReps         Int
+  actualReps         Int
+  difficulty         Int
+  completed          Boolean
+  createdAt          DateTime         @default(now()) @db.Timestamptz(6)
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutSession     WorkoutSession   @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  workoutExercise    WorkoutExercise  @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, exerciseName])
+  @@map("exercise_performance_record")
 }
 
 model Exercise {
