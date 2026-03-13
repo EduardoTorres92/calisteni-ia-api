@@ -58,8 +58,8 @@ Quando o usuário quiser criar um plano de treino, colete dados **UMA PERGUNTA P
 - **Passo 2**: Pergunte "Quantos dias por semana você pode treinar?" (o frontend vai mostrar botões: 2, 3, 4, 5, 6)
 - **Passo 3**: Pergunte se tem restrições físicas ou lesões (texto livre).
 - Espere a resposta de cada passo antes de fazer a próxima pergunta.
-- **SEMPRE** chame a tool \`getExerciseCatalog\` antes de montar o plano para consultar os exercícios disponíveis no catálogo, filtrando por categoria e nível do usuário.
-- Use os nomes exatos dos exercícios retornados pelo catálogo ao criar o plano.
+- **SEMPRE** chame a tool \`getExerciseCatalog\` antes de montar o plano. Passe **sempre** o parâmetro \`equipment\` com o \`availableEquipment\` do usuário (dados de \`getUserTrainData\`), para retornar apenas exercícios que o usuário pode fazer com os equipamentos que tem. Filtre também por categoria e nível do usuário (converta calisthenicsLevel: "Iniciante" → BEGINNER, "Intermediário" → INTERMEDIATE, "Avançado" → ADVANCED).
+- Use **apenas** os nomes exatos dos exercícios retornados pelo catálogo ao criar o plano. Nunca invente exercícios que não tenham sido retornados pelo \`getExerciseCatalog\`.
 
 ### REGRAS OBRIGATÓRIAS DO PLANO (NUNCA VIOLAR):
 1. O plano **DEVE ter EXATAMENTE 7 dias** no array \`workoutDays\`: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY. **SEMPRE todos os 7.** Se o usuário treina 3 dias, os outros 4 devem ser dias de descanso.
@@ -269,7 +269,7 @@ export const aiRoutes = async (app: FastifyInstance) => {
           }),
           getExerciseCatalog: tool({
             description:
-              "Consulta o catálogo de exercícios de calistenia. Use ANTES de criar um plano de treino para selecionar exercícios adequados ao nível do usuário.",
+              "Consulta o catálogo de exercícios de calistenia. OBRIGATÓRIO: ao montar plano, passe sempre 'equipment' com o availableEquipment do usuário (de getUserTrainData), além de category e level, para retornar só exercícios que o usuário pode fazer.",
             inputSchema: z.object({
               category: z
                 .enum(ExerciseCategory)
@@ -281,13 +281,13 @@ export const aiRoutes = async (app: FastifyInstance) => {
                 .enum(ExerciseLevel)
                 .optional()
                 .describe(
-                  "Filtrar por nível: BEGINNER, INTERMEDIATE ou ADVANCED",
+                  "Filtrar por nível: BEGINNER, INTERMEDIATE ou ADVANCED (use o calisthenicsLevel do usuário)",
                 ),
               equipment: z
                 .array(z.string())
                 .optional()
                 .describe(
-                  "Filtrar por equipamentos disponíveis: barra_fixa, paralelas, aneis, faixa_elastica, peso_extra, corda, dumbbell",
+                  "OBRIGATÓRIO ao criar plano: use o availableEquipment do usuário (barra_fixa, paralelas, aneis, faixa_elastica, peso_extra, corda, dumbbell, nenhum). Retorna exercícios que usam pelo menos um desses equipamentos.",
                 ),
             }),
             execute: async (params) => {
