@@ -185,8 +185,9 @@ app.route({
   },
   async handler(request, reply) {
     try {
-      // Construct request URL
-      const url = new URL(request.url, `http://${request.headers.host}`);
+      // Construct request URL — usar API_BASE_URL para HTTPS correto (evita redirect_uri_mismatch no OAuth)
+      const base = env.API_BASE_URL.replace(/\/$/, "");
+      const url = new URL(request.url, `${base}/`);
 
       // Convert Fastify headers to standard Headers object
       const headers = new Headers();
