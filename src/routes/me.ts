@@ -10,13 +10,18 @@ import {
   ErrorSchema,
   PerformanceHistoryResponseSchema,
   ProgressionResponseSchema,
+  UpdateWeeklyGoalBodySchema,
   UserTrainDataResponseSchema,
   UserTrainDataSchema,
+  WeeklyGoalResponseSchema,
+  WeeklyProgressResponseSchema,
 } from "../schemas/index.js";
 import { ApplyAdaptiveRepsToPlan } from "../usecases/apply-adaptive-reps-to-plan.js";
 import { GetPerformanceHistory } from "../usecases/get-performance-history.js";
 import { GetProgression } from "../usecases/get-progression.js";
 import { GetUserTrainData } from "../usecases/get-user-train-data.js";
+import { GetWeeklyProgress } from "../usecases/get-weekly-progress.js";
+import { UpdateWeeklyGoal } from "../usecases/update-weekly-goal.js";
 import { UpsertUserTrainData } from "../usecases/upsert-user-train-data.js";
 
 export const meRoutes = async (app: FastifyInstance) => {
@@ -234,6 +239,95 @@ export const meRoutes = async (app: FastifyInstance) => {
             code: "NOT_FOUND",
           });
         }
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "PATCH",
+    url: "/weekly-goal",
+    schema: {
+      operationId: "updateWeeklyGoal",
+      tags: ["Me"],
+      summary: "Define meta semanal de treinos (quantos dias por semana)",
+      body: UpdateWeeklyGoalBodySchema,
+      response: {
+        200: WeeklyGoalResponseSchema,
+        401: ErrorSchema,
+        404: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const result = await new UpdateWeeklyGoal().execute({
+          userId: session.user.id,
+          weeklyGoal: request.body.weeklyGoal,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
+        if (error instanceof NotFoundError) {
+          return reply.status(404).send({
+            error: error.message,
+            code: "NOT_FOUND",
+          });
+        }
+        return reply.status(500).send({
+          error: "Internal server error",
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/weekly-progress",
+    schema: {
+      operationId: "getWeeklyProgress",
+      tags: ["Me"],
+      summary: "Retorna progresso semanal (treinos concluídos vs meta)",
+      response: {
+        200: WeeklyProgressResponseSchema,
+        401: ErrorSchema,
+        500: ErrorSchema,
+      },
+    },
+    handler: async (request, reply) => {
+      try {
+        const session = await auth.api.getSession({
+          headers: fromNodeHeaders(request.headers),
+        });
+        if (!session) {
+          return reply.status(401).send({
+            error: "Unauthorized",
+            code: "UNAUTHORIZED",
+          });
+        }
+
+        const result = await new GetWeeklyProgress().execute({
+          userId: session.user.id,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error) {
+        app.log.error(error);
         return reply.status(500).send({
           error: "Internal server error",
           code: "INTERNAL_SERVER_ERROR",

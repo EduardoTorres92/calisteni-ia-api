@@ -37,6 +37,7 @@ import { homeRoutes } from "./routes/home.js";
 import { meRoutes } from "./routes/me.js";
 import { statsRoutes } from "./routes/stats.js";
 import { workoutPlanRoutes } from "./routes/workoutplan.js";
+import { workoutSessionRoutes } from "./routes/workout-sessions.js";
 
 const app = Fastify({
   logger: envToLogger[env.NODE_ENV],
@@ -99,6 +100,7 @@ await app.register(workoutPlanRoutes, { prefix: "/workout-plans" });
 await app.register(homeRoutes, { prefix: "/home" });
 await app.register(statsRoutes, { prefix: "/stats" });
 await app.register(meRoutes, { prefix: "/me" });
+await app.register(workoutSessionRoutes, { prefix: "/workout-sessions" });
 await app.register(aiRoutes, { prefix: "/ai" });
 
 app.get("/swagger.json", async (request, reply) => {

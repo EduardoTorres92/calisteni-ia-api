@@ -26,6 +26,7 @@ model User {
   bodyFatPercentage          Int?
   calisthenicsLevel          String?
   availableEquipment         String[]
+  weeklyGoal                 Int?                       @default(5)
 
   @@map("user")
 }

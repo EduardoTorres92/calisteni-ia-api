@@ -243,6 +243,24 @@ export const GetWorkoutPlanResponseSchema = z.object({
   ),
 });
 
+export const UpdateWeeklyGoalBodySchema = z.object({
+  weeklyGoal: z.number().int().min(2).max(7),
+});
+
+export const WeeklyGoalResponseSchema = z.object({
+  weeklyGoal: z.number().int(),
+});
+
+export const WeeklyProgressResponseSchema = z.object({
+  weeklyGoal: z.number().int(),
+  workoutsCompleted: z.number().int(),
+  progressPercentage: z.number().int().min(0).max(100),
+});
+
+export const CoachFeedbackResponseSchema = z.object({
+  feedback: z.string().trim().min(1),
+});
+
 export const WorkoutPlanSchema = z.object({
   id: z.uuid(),
   name: z.string().trim().min(1),
