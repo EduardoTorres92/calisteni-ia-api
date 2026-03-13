@@ -1,6 +1,6 @@
 import { NotFoundError } from "../errors/index.js";
 import { Prisma } from "../generated/prisma/client.js";
-import { WeekDay, ExercisePhase } from "../generated/prisma/enums.js";
+import { ExercisePhase, WeekDay } from "../generated/prisma/enums.js";
 import { prisma } from "../lib/db.js";
 
 interface InputDto {
@@ -66,24 +66,32 @@ export class CreateWorkoutPlan {
           userId: dto.userId,
           isActive: true,
           workoutDays: {
-            create: dto.workoutDays.map((workoutDay: InputDto["workoutDays"][number]) => ({
-              name: workoutDay.name,
-              weekDay: workoutDay.weekDay,
-              isRest: workoutDay.isRest,
-              estimatedDurationInSeconds: workoutDay.estimatedDurationInSeconds,
-              coverImageUrl: workoutDay.coverImageUrl ?? null,
-              workoutExercises: {
-                create: workoutDay.exercises.map((exercise: InputDto["workoutDays"][number]["exercises"][number]) => ({
-                  name: exercise.name,
-                  order: exercise.order,
-                  phase: exercise.phase ?? "WORKOUT",
-                  sets: exercise.sets,
-                  reps: exercise.reps,
-                  restTimeInSeconds: exercise.restTimeInSeconds,
-                  demonstrationVideoUrl: exercise.demonstrationVideoUrl ?? null,
-                })),
-              },
-            })),
+            create: dto.workoutDays.map(
+              (workoutDay: InputDto["workoutDays"][number]) => ({
+                name: workoutDay.name,
+                weekDay: workoutDay.weekDay,
+                isRest: workoutDay.isRest,
+                estimatedDurationInSeconds:
+                  workoutDay.estimatedDurationInSeconds,
+                coverImageUrl: workoutDay.coverImageUrl ?? null,
+                workoutExercises: {
+                  create: workoutDay.exercises.map(
+                    (
+                      exercise: InputDto["workoutDays"][number]["exercises"][number],
+                    ) => ({
+                      name: exercise.name,
+                      order: exercise.order,
+                      phase: exercise.phase ?? "WORKOUT",
+                      sets: exercise.sets,
+                      reps: exercise.reps,
+                      restTimeInSeconds: exercise.restTimeInSeconds,
+                      demonstrationVideoUrl:
+                        exercise.demonstrationVideoUrl ?? null,
+                    }),
+                  ),
+                },
+              }),
+            ),
           },
         },
       });
@@ -103,24 +111,29 @@ export class CreateWorkoutPlan {
       return {
         id: workoutPlan.id,
         name: workoutPlan.name,
-        workoutDays: workoutPlan.workoutDays.map((day: (typeof workoutPlan)["workoutDays"][number]) => ({
-          name: day.name,
-          weekDay: day.weekDay,
-          isRest: day.isRest,
-          estimatedDurationInSeconds: day.estimatedDurationInSeconds,
-          coverImageUrl: day.coverImageUrl,
-          exercises: day.workoutExercises
-            .sort((a: { order: number }, b: { order: number }) => a.order - b.order)
-            .map((ex: (typeof day)["workoutExercises"][number]) => ({
-              order: ex.order,
-              name: ex.name,
-              phase: ex.phase,
-              sets: ex.sets,
-              reps: ex.reps,
-              restTimeInSeconds: ex.restTimeInSeconds,
-              demonstrationVideoUrl: ex.demonstrationVideoUrl ?? null,
-            })),
-        })),
+        workoutDays: workoutPlan.workoutDays.map(
+          (day: (typeof workoutPlan)["workoutDays"][number]) => ({
+            name: day.name,
+            weekDay: day.weekDay,
+            isRest: day.isRest,
+            estimatedDurationInSeconds: day.estimatedDurationInSeconds,
+            coverImageUrl: day.coverImageUrl,
+            exercises: day.workoutExercises
+              .sort(
+                (a: { order: number }, b: { order: number }) =>
+                  a.order - b.order,
+              )
+              .map((ex: (typeof day)["workoutExercises"][number]) => ({
+                order: ex.order,
+                name: ex.name,
+                phase: ex.phase,
+                sets: ex.sets,
+                reps: ex.reps,
+                restTimeInSeconds: ex.restTimeInSeconds,
+                demonstrationVideoUrl: ex.demonstrationVideoUrl ?? null,
+              })),
+          }),
+        ),
       };
     });
   }

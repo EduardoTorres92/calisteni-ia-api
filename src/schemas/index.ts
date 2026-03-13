@@ -93,6 +93,19 @@ export const ProgressionResponseSchema = z.object({
   progressions: z.array(ExerciseProgressionItemSchema),
 });
 
+export const ApplyAdaptiveRepsUpdatedItemSchema = z.object({
+  workoutExerciseId: z.uuid(),
+  exerciseName: z.string(),
+  previousReps: z.number().int(),
+  newReps: z.number().int(),
+});
+
+export const ApplyAdaptiveRepsResponseSchema = z.object({
+  workoutPlanId: z.uuid(),
+  workoutPlanName: z.string(),
+  updated: z.array(ApplyAdaptiveRepsUpdatedItemSchema),
+});
+
 export const PerformanceHistoryDataPointSchema = z.object({
   date: z.string(),
   exerciseName: z.string(),

@@ -17,6 +17,7 @@ import {
   WeekDay,
 } from "../generated/prisma/enums.js";
 import { auth } from "../lib/auth.js";
+import { ApplyAdaptiveRepsToPlan } from "../usecases/apply-adaptive-reps-to-plan.js";
 import { CreateWorkoutPlan } from "../usecases/create-workout-plan.js";
 import { GetExerciseCatalog } from "../usecases/get-exercise-catalog.js";
 import { GetPerformanceHistory } from "../usecases/get-performance-history.js";
@@ -43,13 +44,14 @@ const SYSTEM_PROMPT = `Você é um personal trainer virtual especialista em **ca
    - Após receber TODOS os dados, salve com a tool \`updateUserTrainData\`. **IMPORTANTE**: converta o peso de kg para gramas (multiplique por 1000) antes de salvar.
    - **NUNCA** pule passos ou junte perguntas. Espere a resposta de cada passo antes de fazer a próxima pergunta.
 3. Quando o usuário pedir para **atualizar peso**: chame \`getUserTrainData\`, depois pergunte "Qual seu peso atual em kg?" (número). Ao receber o valor, chame a tool \`updateWeight\` com o peso em kg (ex: 72.5). Confirme a atualização de forma motivadora.
-4. Quando o usuário pedir **análise de desempenho** ou **evolução**: chame a tool \`getPerformanceAnalysis\` e apresente um resumo claro da evolução (exercícios, progressão de reps, sugestão para o próximo treino). Destaque conquistas e incentive.
-5. Se o usuário **já tem dados cadastrados** MAS \`calisthenicsLevel\` é null ou \`availableEquipment\` está vazio:
+4. Quando o usuário pedir **análise de desempenho** ou **evolução**: chame a tool \`getPerformanceAnalysis\` e apresente um resumo claro da evolução (exercícios, progressão de reps, sugestão para o próximo treino). Destaque conquistas e incentive. **Ao final**, ofereça aplicar a atualização no plano: "Quer que eu já atualize as reps do seu treino para a próxima semana com base nisso?" Se o usuário confirmar (sim, quero, pode atualizar, etc.), chame a tool \`applyAdaptiveRepsToPlan\` e resuma o que foi alterado.
+5. Quando o usuário pedir para **atualizar o treino para a próxima semana** ou **aplicar progressão automática**: chame a tool \`applyAdaptiveRepsToPlan\`. Ela ajusta as reps do plano ativo com base no desempenho (atingiu meta e fácil → sobe 2 reps; não atingiu ou muito difícil → reduz 2; resto mantém). Resuma o que foi alterado (quais exercícios subiram ou desceram de reps) de forma motivadora.
+6. Se o usuário **já tem dados cadastrados** MAS \`calisthenicsLevel\` é null ou \`availableEquipment\` está vazio:
    - Cumprimente pelo nome, mas diga que precisa completar o perfil.
    - Se \`calisthenicsLevel\` é null: pergunte "Qual seu nível na calistenia?" (botões: Iniciante, Intermediário, Avançado)
    - Se \`availableEquipment\` está vazio: pergunte "Quais equipamentos você tem disponíveis?" (botões com opções)
    - Após receber, salve com \`updateUserTrainData\` usando os dados existentes + os novos campos.
-6. Se o usuário **já tem dados completos** (incluindo nível e equipamentos): cumprimente-o pelo nome de forma amigável.
+7. Se o usuário **já tem dados completos** (incluindo nível e equipamentos): cumprimente-o pelo nome de forma amigável.
 
 ## Criação de Plano de Treino
 
@@ -65,7 +67,7 @@ Quando o usuário quiser criar um plano de treino, colete dados **UMA PERGUNTA P
 1. O plano **DEVE ter EXATAMENTE 7 dias** no array \`workoutDays\`: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY. **SEMPRE todos os 7.** Se o usuário treina 3 dias, os outros 4 devem ser dias de descanso.
 2. Dias sem treino devem ter: \`isRest: true\`, \`exercises: []\`, \`estimatedDurationInSeconds: 0\`.
 3. Cada dia de treino (não descanso) **DEVE ter no MÍNIMO 5 exercícios e no MÁXIMO 8.** NUNCA gere menos de 5.
-4. Chame a tool \`createWorkoutPlan\` com TODOS os 7 dias em UMA ÚNICA chamada. Não divida em múltiplas chamadas.
+8. Chame a tool \`createWorkoutPlan\` com TODOS os 7 dias em UMA ÚNICA chamada. Não divida em múltiplas chamadas.
 
 ### Divisões de Treino (Splits para Calistenia)
 
@@ -256,6 +258,15 @@ export const aiRoutes = async (app: FastifyInstance) => {
                 getPerformanceHistory.execute({ userId, limit: 50 }),
               ]);
               return { progression: progression.progressions, history: history.history };
+            },
+          }),
+          applyAdaptiveRepsToPlan: tool({
+            description:
+              "Atualiza as reps do plano de treino ativo para a próxima semana com base no desempenho: se atingiu a meta e foi fácil (RPE ≤ 6) aumenta 2 reps; se não atingiu ou foi muito difícil (RPE ≥ 8) reduz 2 reps; caso contrário mantém. Use quando o usuário pedir para atualizar o treino para a próxima semana ou aplicar progressão automática.",
+            inputSchema: z.object({}),
+            execute: async () => {
+              const applyAdaptiveRepsToPlan = new ApplyAdaptiveRepsToPlan();
+              return applyAdaptiveRepsToPlan.execute({ userId });
             },
           }),
           getWorkoutPlans: tool({
