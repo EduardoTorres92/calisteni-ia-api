@@ -190,7 +190,7 @@ export class GetHomeData {
     }
 
     const lookbackStart = currentDate.subtract(90, "day").startOf("day").toDate();
-    const lookbackEnd = currentDate.subtract(1, "day").endOf("day").toDate();
+    const lookbackEnd = currentDate.endOf("day").toDate();
 
     const completedSessions = await prisma.workoutSession.findMany({
       where: {

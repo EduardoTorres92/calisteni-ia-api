@@ -19,6 +19,8 @@ import {
 import { auth } from "../lib/auth.js";
 import { CreateWorkoutPlan } from "../usecases/create-workout-plan.js";
 import { GetExerciseCatalog } from "../usecases/get-exercise-catalog.js";
+import { GetPerformanceHistory } from "../usecases/get-performance-history.js";
+import { GetProgression } from "../usecases/get-progression.js";
 import { GetUserTrainData } from "../usecases/get-user-train-data.js";
 import { ListWorkoutPlans } from "../usecases/list-workout-plans.js";
 import { UpsertUserTrainData } from "../usecases/upsert-user-train-data.js";
@@ -40,12 +42,14 @@ const SYSTEM_PROMPT = `Você é um personal trainer virtual especialista em **ca
    - **Passo 3**: Pergunte "Quais equipamentos você tem disponíveis?" (o frontend vai mostrar botões com as opções)
    - Após receber TODOS os dados, salve com a tool \`updateUserTrainData\`. **IMPORTANTE**: converta o peso de kg para gramas (multiplique por 1000) antes de salvar.
    - **NUNCA** pule passos ou junte perguntas. Espere a resposta de cada passo antes de fazer a próxima pergunta.
-3. Se o usuário **já tem dados cadastrados** MAS \`calisthenicsLevel\` é null ou \`availableEquipment\` está vazio:
+3. Quando o usuário pedir para **atualizar peso**: chame \`getUserTrainData\`, depois pergunte "Qual seu peso atual em kg?" (número). Ao receber o valor, chame a tool \`updateWeight\` com o peso em kg (ex: 72.5). Confirme a atualização de forma motivadora.
+4. Quando o usuário pedir **análise de desempenho** ou **evolução**: chame a tool \`getPerformanceAnalysis\` e apresente um resumo claro da evolução (exercícios, progressão de reps, sugestão para o próximo treino). Destaque conquistas e incentive.
+5. Se o usuário **já tem dados cadastrados** MAS \`calisthenicsLevel\` é null ou \`availableEquipment\` está vazio:
    - Cumprimente pelo nome, mas diga que precisa completar o perfil.
    - Se \`calisthenicsLevel\` é null: pergunte "Qual seu nível na calistenia?" (botões: Iniciante, Intermediário, Avançado)
    - Se \`availableEquipment\` está vazio: pergunte "Quais equipamentos você tem disponíveis?" (botões com opções)
    - Após receber, salve com \`updateUserTrainData\` usando os dados existentes + os novos campos.
-4. Se o usuário **já tem dados completos** (incluindo nível e equipamentos): cumprimente-o pelo nome de forma amigável.
+6. Se o usuário **já tem dados completos** (incluindo nível e equipamentos): cumprimente-o pelo nome de forma amigável.
 
 ## Criação de Plano de Treino
 
@@ -182,6 +186,29 @@ export const aiRoutes = async (app: FastifyInstance) => {
               return getUserTrainData.execute(userId);
             },
           }),
+          updateWeight: tool({
+            description:
+              "Atualiza apenas o peso do usuário. Use quando o usuário pedir para atualizar peso. O valor deve ser em kg (ex: 72.5).",
+            inputSchema: z.object({
+              weightInKg: z.number().positive().describe("Peso do usuário em kg (ex: 72.5)"),
+            }),
+            execute: async (params) => {
+              const getUserTrainData = new GetUserTrainData();
+              const current = await getUserTrainData.execute(userId);
+              if (!current) {
+                return { success: false, message: "Usuário ainda não tem dados cadastrados. Peça para preencher o perfil primeiro." };
+              }
+              const upsertUserTrainData = new UpsertUserTrainData();
+              await upsertUserTrainData.execute({
+                userId,
+                weightInGrams: Math.round(params.weightInKg * 1000),
+                heightInCentimeters: current.heightInCentimeters,
+                age: current.age,
+                bodyFatPercentage: current.bodyFatPercentage,
+              });
+              return { success: true, newWeightKg: params.weightInKg };
+            },
+          }),
           updateUserTrainData: tool({
             description:
               "Atualiza os dados de treino do usuário autenticado. O peso deve ser em gramas (converter kg * 1000).",
@@ -215,6 +242,20 @@ export const aiRoutes = async (app: FastifyInstance) => {
             execute: async (params) => {
               const upsertUserTrainData = new UpsertUserTrainData();
               return upsertUserTrainData.execute({ userId, ...params });
+            },
+          }),
+          getPerformanceAnalysis: tool({
+            description:
+              "Retorna a evolução e o desempenho do usuário ao longo do tempo: progressão de reps por exercício e histórico de treinos. Use quando o usuário pedir análise de desempenho ou evolução.",
+            inputSchema: z.object({}),
+            execute: async () => {
+              const getProgression = new GetProgression();
+              const getPerformanceHistory = new GetPerformanceHistory();
+              const [progression, history] = await Promise.all([
+                getProgression.execute({ userId }),
+                getPerformanceHistory.execute({ userId, limit: 50 }),
+              ]);
+              return { progression: progression.progressions, history: history.history };
             },
           }),
           getWorkoutPlans: tool({
