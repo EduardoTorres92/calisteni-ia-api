@@ -55,4 +55,3 @@ Swagger/OpenAPI com Scalar disponível em `/docs` quando o servidor está rodand
 
 - **NUNCA** altere a configuração em `src/lib/auth.ts` (ex.: `baseURL`, `trustedOrigins`, `socialProviders`) nem o handler da rota `/api/auth/*` em `src/index.ts` sem solicitação explícita do usuário.
 - O fluxo de login depende do `baseURL` do better-auth estar alinhado ao **redirect URI** configurado no Google Cloud Console (frontend). Alterar `baseURL` para a URL da API quebra o login se o redirect no Google for o do frontend.
-- Em caso de mudança de ambiente ou domínio, ajustar primeiro as credenciais OAuth no Google e as variáveis de ambiente (ex.: `WEB_APP_BASE_URL`, `API_BASE_URL`) antes de qualquer alteração no código de auth.

@@ -177,6 +177,29 @@ app.withTypeProvider<ZodTypeProvider>().route({
   },
 });
 
+app.withTypeProvider<ZodTypeProvider>().route({
+  method: "GET",
+  url: "/api/auth/expected-redirect-uri",
+  schema: {
+    description:
+      "Redirect URI que a API envia ao Google. Adicione exatamente esta URL em Google Cloud Console > Credenciais > URIs de redirecionamento autorizados.",
+    tags: ["Auth"],
+    response: {
+      200: z.object({
+        redirectUri: z.string().url(),
+        hint: z.string(),
+      }),
+    },
+  },
+  handler: () => {
+    const base = env.WEB_APP_BASE_URL.replace(/\/$/, "");
+    return {
+      redirectUri: `${base}/api/auth/callback/google`,
+      hint: "Copie o valor de redirectUri e adicione em Google Cloud Console > Credenciais > seu cliente OAuth > URIs de redirecionamento autorizados.",
+    };
+  },
+});
+
 app.route({
   method: ["GET", "POST"],
   url: "/api/auth/*",
@@ -185,9 +208,8 @@ app.route({
   },
   async handler(request, reply) {
     try {
-      // Construct request URL — usar API_BASE_URL para HTTPS correto (evita redirect_uri_mismatch no OAuth)
-      const base = env.API_BASE_URL.replace(/\/$/, "");
-      const url = new URL(request.url, `${base}/`);
+      // Construct request URL
+      const url = new URL(request.url, `http://${request.headers.host}`);
 
       // Convert Fastify headers to standard Headers object
       const headers = new Headers();
